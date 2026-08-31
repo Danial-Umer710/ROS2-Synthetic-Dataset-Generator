@@ -1,4 +1,28 @@
+
 build/ 
 install/ 
 log/ 
 __pycache__/ 
+
+# ROS2 Build files
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.pyc
+.LF_venv/
+.env
+
+# Datasets and Images (Do not upload generated data)
+annotations/
+renders/
+*.exr
+*.png
+*.jpg
+
+# OS generated files
+.DS_Store
+Thumbs.db
+e8eb27ab5c10a6f02ed5a4e9aa794f476c35d838
