@@ -1,0 +1,240 @@
+{
+  "main": {
+    "id": "4a83f84c70094b7c",
+    "type": "split",
+    "children": [
+      {
+        "id": "ca99277816531701",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "945aeca22fd9427b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "14 - Local YOLO Training & Environment Optimization.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "14 - Local YOLO Training & Environment Optimization"
+            }
+          },
+          {
+            "id": "193683b6bc4184f5",
+            "type": "leaf",
+            "state": {
+              "type": "image",
+              "state": {
+                "file": "camera_image.png"
+              },
+              "icon": "lucide-image",
+              "title": "camera_image"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "5d91bd20c3ecb49e",
+    "type": "split",
+    "children": [
+      {
+        "id": "dfb85bb0d6df69a5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5298ddc0622f79aa",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "4c310a58885be1cf",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "c727cccfdb9e3b39",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "b7aeef9d9d54a9c8",
+    "type": "split",
+    "children": [
+      {
+        "id": "7b7efd09ad1f091f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "da629fda10e52a71",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "01. Project Plan.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 01. Project Plan"
+            }
+          },
+          {
+            "id": "3c046037d8e4019f",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "01. Project Plan.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 01. Project Plan"
+            }
+          },
+          {
+            "id": "e844e73f65888565",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "f489ffb786d1ab00",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "616f25303f429950",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "01. Project Plan.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 01. Project Plan"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "193683b6bc4184f5",
+  "lastOpenFiles": [
+    "glass_slide.blend@",
+    "glass_tube.blend1",
+    "tube_holder.blend@",
+    "tube_holder.blend1",
+    "slide_holder.blend1",
+    "glass_tube.blend",
+    "tube_holder.blend",
+    "glass_Tube.blend",
+    "Glass_Tube.blend",
+    "Glass_Tube.blend@",
+    "slide_holder.blend",
+    "Charuco.png",
+    "15 - MLOps Log- Domain Adaptation & Infrastructure Pivot.md",
+    "14 - Local YOLO Training & Environment Optimization.md",
+    "Blender objects.png",
+    "09 - Asset Sourcing & Scene Composition.md.md",
+    "06 - Digital Twin Modeling.md.md",
+    "12 - Blender Headless HTTP Server & WSL2 Bridge.md",
+    "13 - Automated YOLO Bounding-Box Generation.md",
+    "prediction_output.jpg",
+    "Rendered Image.png",
+    "Synthetic Data Pipeline, Blender + BAT + Label_Factory.md",
+    "camera_angle_image.png",
+    "camera_image.png",
+    "10 - Synthetic Render Verification & Benchmark Design.md",
+    "01. Project Plan.md",
+    "08 - Asset Stubbing.md.md",
+    "07 - API Verification & Asset Scaling.md.md",
+    "05 - BAT Configuration.md.md",
+    "02 - Core Dependencies & Compilation.md.md",
+    "11 - Network Bridge & Config Standardization.md",
+    "01 - Environment Setup.md.md",
+    "INSERT_YOUR_5_CLASS_MASK_SCREENSHOT_HERE.md",
+    "04 - Digital Twin Setup.md.md",
+    "Welcome.md",
+    "03 - Offline Validation & Calibration.md.md"
+  ]
+}
