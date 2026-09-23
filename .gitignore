@@ -1,28 +1,123 @@
+# ============================================
+# UR16e Sim2Real Labware Detection
+# Strict .gitignore for ML Project
+# ============================================
 
-build/ 
-install/ 
-log/ 
-__pycache__/ 
-
-# ROS2 Build files
+# -------------------- ROS2 Build Files --------------------
 build/
 install/
 log/
 
-# Python
+# -------------------- Python --------------------
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+.eggs/
 .LF_venv/
+venv/
+env/
 .env
+.venv
 
-# Datasets and Images (Do not upload generated data)
+# -------------------- Dataset Directories (CRITICAL) --------------------
+# Explicitly ignore all dataset folders to prevent uploading heavy files
+Blender Dataset/
+YOLO_Dataset/
+YOLO_Main_Dataset/
+YOLO_Test_Dataset/
+UR16e_Synthetic_Dataset/
+UR_Robotics_Project/
+Real_Dataset/
+Label/
+Label_Factory/
+QA_Check/
+Pics/
+Test Renders/
+Testing Pics/
 annotations/
 renders/
-*.exr
-*.png
-*.jpg
 
-# OS generated files
+# -------------------- Training Runs & Outputs --------------------
+# Ignore all YOLO training runs and outputs
+runs/
+*.cache
+
+# -------------------- Image Files --------------------
+# Do not upload any images (synthetic or real)
+*.jpg
+*.jpeg
+*.png
+*.exr
+*.bmp
+*.tiff
+*.tif
+*.gif
+*.webp
+
+# -------------------- Model Weights --------------------
+# Ignore all model weights except final best.pt (if under 50MB)
+*.pt
+*.pth
+*.onnx
+*.weights
+*.h5
+*.pb
+*.tflite
+
+# Exception: Allow best.pt if it's the final model (manually add if needed)
+# !best.pt
+
+# -------------------- Blender Files --------------------
+# Ignore Blender backup files
+*.blend1
+*.blend2
+
+# -------------------- Archives --------------------
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# -------------------- OS Generated Files --------------------
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+Desktop.ini
+
+# -------------------- IDE & Editor Files --------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.obsidian/
+
+# -------------------- Logs & Temporary Files --------------------
+*.log
+*.tmp
+*.temp
+*.bak
+*.old
+
+# -------------------- Git Artifacts --------------------
+*.orig
 e8eb27ab5c10a6f02ed5a4e9aa794f476c35d838
+
+# -------------------- Documentation Assets --------------------
+# Keep only essential documentation images
+# All other images are blocked by *.png and *.jpg above
+docs/assets/*.png
+docs/assets/*.jpg
+assets/*.png
+assets/*.jpg
