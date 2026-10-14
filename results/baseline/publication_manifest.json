@@ -1,0 +1,443 @@
+{
+  "baseline": "stl_synthetic_800_30ep_holdout",
+  "split_seed": 42,
+  "splits": {
+    "train": {
+      "images": 800,
+      "labels": 800,
+      "instances_by_class": [
+        800,
+        2378,
+        668,
+        672
+      ]
+    },
+    "val": {
+      "images": 100,
+      "labels": 100,
+      "instances_by_class": [
+        100,
+        305,
+        78,
+        83
+      ]
+    },
+    "test": {
+      "images": 100,
+      "labels": 100,
+      "instances_by_class": [
+        100,
+        302,
+        86,
+        78
+      ]
+    }
+  },
+  "dataset_config_sha256": "e02a39d3725fe977c06b6c2d0bd05a47687192884a83301825993c2742e49e53",
+  "dataset_manifest_sha256": "13ea1e441197b1051116b534c90b787c76a6dce668d3119793f027373a54157d",
+  "dataset_integrity": "Image, decoded-pixel and label SHA256 values are stored in dataset/split_manifest.json.",
+  "artifacts": [
+    {
+      "path": "stl_models/TubeHolder.stl",
+      "source": "Data Sets/STL dataset/TubeHolder.stl",
+      "bytes": 980184,
+      "sha256": "c6ad60c6c97a7c7cfb3cf6d9cf6e4a09fea19865821bb5f4a37c5f53e746d3d4"
+    },
+    {
+      "path": "stl_models/Tube.stl",
+      "source": "Data Sets/STL dataset/Tube.stl",
+      "bytes": 122284,
+      "sha256": "73e996aa5bfc37f6ec51f319788fb4a2eaf1b3fbaee62eeb9c9af4b0828f2d01"
+    },
+    {
+      "path": "stl_models/Slide_holder.stl",
+      "source": "Data Sets/STL dataset/Slide_holder.stl",
+      "bytes": 15684,
+      "sha256": "b76c3670768b808858484fbaaaade4a40f77fb25c0412b41958ef1f4ad057cd3"
+    },
+    {
+      "path": "stl_models/eppendorf_tarto.stl",
+      "source": "Data Sets/STL dataset/eppendorf_tarto.stl",
+      "bytes": 1156284,
+      "sha256": "7d698d64d81473da4ef3e670b532046ae03c6d76df03022f6f00a0770163feef"
+    },
+    {
+      "path": "weights/best.pt",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/weights/best.pt",
+      "bytes": 6483340,
+      "sha256": "8bd74b415a4873487b253b1996d0ba4b5b84d88398fa012f8dec22d3c0662ea1"
+    },
+    {
+      "path": "weights/last.pt",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/weights/last.pt",
+      "bytes": 6483340,
+      "sha256": "d2a863b8c9d92eccadd158f36dcfef4ebf9909eefd7e8044a371219f6330060f"
+    },
+    {
+      "path": "results/baseline/training/args.yaml",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/args.yaml",
+      "bytes": 2000,
+      "sha256": "e14c9cdaf124b5b48cdcb6ac9c2fa72f8b413da23b13329bb3fa01b4e0bd23b1"
+    },
+    {
+      "path": "results/baseline/training/BoxF1_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/BoxF1_curve.png",
+      "bytes": 144870,
+      "sha256": "8e7c59999ba8c725480f52b0c9765ded522cd5fa7e1ff1d2ca70087dee4a3218"
+    },
+    {
+      "path": "results/baseline/training/BoxP_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/BoxP_curve.png",
+      "bytes": 102381,
+      "sha256": "d94873f4eed4f49a34bb253ee31b1401e32404e1b66392c171d125b5566c023a"
+    },
+    {
+      "path": "results/baseline/training/BoxPR_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/BoxPR_curve.png",
+      "bytes": 101556,
+      "sha256": "d78ba0d8e8d3fee43316559761be1423f73ebb6043e869e0e7667060aa056114"
+    },
+    {
+      "path": "results/baseline/training/BoxR_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/BoxR_curve.png",
+      "bytes": 145598,
+      "sha256": "02d561907d530a55bd96e353ace5188547c538c46d3f3b1c713efd1d4980b8a0"
+    },
+    {
+      "path": "results/baseline/training/confusion_matrix.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/confusion_matrix.png",
+      "bytes": 134781,
+      "sha256": "8e77b771ee5dfe1dd4ebfcc085779fd5f87deb6e9e659f69033b378e04a39a27"
+    },
+    {
+      "path": "results/baseline/training/confusion_matrix_normalized.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/confusion_matrix_normalized.png",
+      "bytes": 145887,
+      "sha256": "90a4134be84861ba0b2da4f1925c8b1c36c6f94cbfcb3ef070ead428896ee220"
+    },
+    {
+      "path": "results/baseline/training/labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/labels.jpg",
+      "bytes": 126106,
+      "sha256": "90a78577c2848f46b2eef972cd8d43b7075dcf3fcf14a3bc75dbfbe69c5a3d79"
+    },
+    {
+      "path": "results/baseline/training/results.csv",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/results.csv",
+      "bytes": 4339,
+      "sha256": "4af90ab66bb938ca1a47a6046c9d775ea22009471ac556c0d07a97e76feb19c4"
+    },
+    {
+      "path": "results/baseline/training/results.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/results.png",
+      "bytes": 288315,
+      "sha256": "166b6c16bc48d1b91a287d662c934f4598f5d59c844f60893146346f16191d7f"
+    },
+    {
+      "path": "results/baseline/training/split_manifest.json",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/split_manifest.json",
+      "bytes": 424507,
+      "sha256": "13ea1e441197b1051116b534c90b787c76a6dce668d3119793f027373a54157d"
+    },
+    {
+      "path": "results/baseline/training/train_batch0.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/train_batch0.jpg",
+      "bytes": 444972,
+      "sha256": "3b06aba963aec491dba3c9e61160c533a7192971bf4a5676457c6a2769bce601"
+    },
+    {
+      "path": "results/baseline/training/train_batch1.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/train_batch1.jpg",
+      "bytes": 485664,
+      "sha256": "1a16602862f67cd9d1c9c3ae4808736a3b5694c884b3e83b74a259ac5e448629"
+    },
+    {
+      "path": "results/baseline/training/train_batch1000.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/train_batch1000.jpg",
+      "bytes": 456178,
+      "sha256": "a8c569af20dbf5abe3a5db48dbfb56f332162832ecf5d7c02283aa73ce11e7f7"
+    },
+    {
+      "path": "results/baseline/training/train_batch1001.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/train_batch1001.jpg",
+      "bytes": 392299,
+      "sha256": "0d51ae50f4c359190340925e6bff64bcada0cf62b0b7a854b8f0384e28d0192d"
+    },
+    {
+      "path": "results/baseline/training/train_batch1002.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/train_batch1002.jpg",
+      "bytes": 390666,
+      "sha256": "2fac66a6893d24e06a9e321c5d44a02904cf8932439fe38438af522dfda5a9bd"
+    },
+    {
+      "path": "results/baseline/training/train_batch2.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/train_batch2.jpg",
+      "bytes": 560227,
+      "sha256": "91985a2a65ca21b87ad33867c79345fc4516265bfa895f6ca14493a61f329f1a"
+    },
+    {
+      "path": "results/baseline/training/training_provenance.json",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/training_provenance.json",
+      "bytes": 1231,
+      "sha256": "663179930588d123d31ff0dc7f5d8e58cc7b99e38571cb018a2609cd5c011979"
+    },
+    {
+      "path": "results/baseline/training/val_batch0_labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/val_batch0_labels.jpg",
+      "bytes": 571149,
+      "sha256": "9fc2a5a4889af44690f6b5fc95d47d3833264411632a6f83f78aa233ddd9bc0c"
+    },
+    {
+      "path": "results/baseline/training/val_batch0_pred.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/val_batch0_pred.jpg",
+      "bytes": 591748,
+      "sha256": "fd4a9771fbd2b33edb243f5300b339a07822adb0c4bf6eeba4673d92f1eef310"
+    },
+    {
+      "path": "results/baseline/training/val_batch1_labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/val_batch1_labels.jpg",
+      "bytes": 618565,
+      "sha256": "4d392ef5a08e970069a6bf52693a7f2057fd8d68ee81a7d054ddd14f6d9f3ec8"
+    },
+    {
+      "path": "results/baseline/training/val_batch1_pred.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/val_batch1_pred.jpg",
+      "bytes": 640239,
+      "sha256": "ae759eeefaf693addc9bdb86cf5c42de80dbf09dd8143556abe165b81fee2b29"
+    },
+    {
+      "path": "results/baseline/training/val_batch2_labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/val_batch2_labels.jpg",
+      "bytes": 618405,
+      "sha256": "5afaed1838109f81d36ec52d1300c5dfde9c58c771cbc30ca736c7043599d7ac"
+    },
+    {
+      "path": "results/baseline/training/val_batch2_pred.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/val_batch2_pred.jpg",
+      "bytes": 637636,
+      "sha256": "c4d5d80d4819607119176fae765aa1200fec61536577a7e1c6705ca8ffc7033d"
+    },
+    {
+      "path": "results/baseline/validation/metrics.json",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_metrics.json",
+      "bytes": 1518,
+      "sha256": "b9fb83c807b03d0d69d4b20c67f55aed3864cfdeee731068692dedb35469e9bd"
+    },
+    {
+      "path": "results/baseline/validation/BoxF1_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/BoxF1_curve.png",
+      "bytes": 154623,
+      "sha256": "b8264a2db65a4c3f03be790ca46240bf7e93c6579b0fbd2156517f8d3b97ce70"
+    },
+    {
+      "path": "results/baseline/validation/BoxP_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/BoxP_curve.png",
+      "bytes": 111398,
+      "sha256": "3ab92c1eb9c1ad8e3362099fe50005b12b94c75cec46774f242c35a3809fe19e"
+    },
+    {
+      "path": "results/baseline/validation/BoxPR_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/BoxPR_curve.png",
+      "bytes": 102233,
+      "sha256": "52922daa85ded29a34f0a989d958b5375ddacaabd23c8eebce4bc091efa022b5"
+    },
+    {
+      "path": "results/baseline/validation/BoxR_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/BoxR_curve.png",
+      "bytes": 145101,
+      "sha256": "bd5a179d3d1224ef899cd2aaa4a79127b2aeebd21bc51d5a44d8d9da32f939f4"
+    },
+    {
+      "path": "results/baseline/validation/confusion_matrix.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/confusion_matrix.png",
+      "bytes": 151572,
+      "sha256": "96a4e4238f5d6e5c9d92b559f5d51ca21add438ac379458843c0d0ad7162ef66"
+    },
+    {
+      "path": "results/baseline/validation/confusion_matrix_normalized.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/confusion_matrix_normalized.png",
+      "bytes": 161627,
+      "sha256": "7492430017bcfa55a0e4c1cb53958733775efa9d54e9531f7fc1f693d5753a39"
+    },
+    {
+      "path": "results/baseline/validation/val_batch0_labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/val_batch0_labels.jpg",
+      "bytes": 570509,
+      "sha256": "b61e80b5784432fb3304777b236bb26fdb2c6d4478431946b1b7be0499d2ed6c"
+    },
+    {
+      "path": "results/baseline/validation/val_batch0_pred.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/val_batch0_pred.jpg",
+      "bytes": 590662,
+      "sha256": "ff857d918317c55c47c30d4ab5eaa7f6db5e5a4bb09c455c6fe2a62dd2c013a4"
+    },
+    {
+      "path": "results/baseline/validation/val_batch1_labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/val_batch1_labels.jpg",
+      "bytes": 617776,
+      "sha256": "430432ba71aa0db41043a5d23a5a23ecd3b4d57a3e32ab3dfde5b10948a9ef6b"
+    },
+    {
+      "path": "results/baseline/validation/val_batch1_pred.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/val_batch1_pred.jpg",
+      "bytes": 638931,
+      "sha256": "97e8806e441ed298a2eca1daef3e7f5ffd4f968fa78ca2ef61113ecf7560dc4a"
+    },
+    {
+      "path": "results/baseline/validation/val_batch2_labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/val_batch2_labels.jpg",
+      "bytes": 617479,
+      "sha256": "049a830af1b31acaac7ca7c4ef67e3f16743fcd8f78a5f88a39f5aa3ad2ccc05"
+    },
+    {
+      "path": "results/baseline/validation/val_batch2_pred.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_val/val_batch2_pred.jpg",
+      "bytes": 637291,
+      "sha256": "29816b6b296d6eaf1c32536e8acd32f3a76fb93a77a6b535ade25caf58e7c148"
+    },
+    {
+      "path": "results/baseline/test/BoxF1_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/BoxF1_curve.png",
+      "bytes": 159504,
+      "sha256": "2c104f056158f75c65f9870f6d3a299832bbb1707cfbd6f6877fcc9cecfa390e"
+    },
+    {
+      "path": "results/baseline/test/BoxP_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/BoxP_curve.png",
+      "bytes": 116325,
+      "sha256": "8bf10e445acdf46609289bba7e43ade0ac1889d9f973d3a4b3128bf0b2905bf3"
+    },
+    {
+      "path": "results/baseline/test/BoxPR_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/BoxPR_curve.png",
+      "bytes": 108313,
+      "sha256": "c6f09a66e717f1d2cf470f801e00739ea6133d30241379a5b45212ce2d6b5a3b"
+    },
+    {
+      "path": "results/baseline/test/BoxR_curve.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/BoxR_curve.png",
+      "bytes": 143694,
+      "sha256": "7dcef4c1b5df4e488a494b32e139de5de4c4841d7445427deb1d317dc26ba47b"
+    },
+    {
+      "path": "results/baseline/test/confusion_matrix.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/confusion_matrix.png",
+      "bytes": 147158,
+      "sha256": "43d2516108de7f54244dc5d7932117e30e295c40a36d13dfadc077f269bd272e"
+    },
+    {
+      "path": "results/baseline/test/confusion_matrix_normalized.png",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/confusion_matrix_normalized.png",
+      "bytes": 163919,
+      "sha256": "993c003dd5833b2f7ceebcdb8aa694ff2eaec560d1952266d2ead69ae2cf011b"
+    },
+    {
+      "path": "results/baseline/test/metrics.json",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/metrics.json",
+      "bytes": 2020,
+      "sha256": "06319bad3d63327f0dc681fa4b91ea328264bfe6da8246c046c36da94008f3f0"
+    },
+    {
+      "path": "results/baseline/test/val_batch0_labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/val_batch0_labels.jpg",
+      "bytes": 587414,
+      "sha256": "60aab4c8405e6e423b4a9a1f724808470428ea1654d3675f5b01a4fabadc917e"
+    },
+    {
+      "path": "results/baseline/test/val_batch0_pred.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/val_batch0_pred.jpg",
+      "bytes": 616736,
+      "sha256": "6aa65caf3f93843a342080fc3d41481f8b821ca8c2afe3be20e1208d3f73b517"
+    },
+    {
+      "path": "results/baseline/test/val_batch1_labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/val_batch1_labels.jpg",
+      "bytes": 634824,
+      "sha256": "5965f848a46ebe385eb1db14416d70be960afc5b8fef6cf49093e55d03bc16b1"
+    },
+    {
+      "path": "results/baseline/test/val_batch1_pred.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/val_batch1_pred.jpg",
+      "bytes": 654310,
+      "sha256": "a4f6f2a01a43eb5c5ba681c3c39b0c8473c40564928f1ffecbc39c874e95f369"
+    },
+    {
+      "path": "results/baseline/test/val_batch2_labels.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/val_batch2_labels.jpg",
+      "bytes": 611133,
+      "sha256": "36a0c1687d0c787bb87bef55aecc66c9d26093eacf26b40271216cf3af641631"
+    },
+    {
+      "path": "results/baseline/test/val_batch2_pred.jpg",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/heldout_test/val_batch2_pred.jpg",
+      "bytes": 634699,
+      "sha256": "3071e4f3f53ea9fcbf726094dcd18e355ef275d4061ae319e45fc19a8423e255"
+    },
+    {
+      "path": "results/baseline/test/predictions.json",
+      "source": "runs/obb/UR16e_Labware_Detection/stl_synthetic_800_30ep_holdout/test_predictions.json",
+      "bytes": 236493,
+      "sha256": "e34100148c72e14b26bf4f5b8e111f3d385f54a267e3b424a919aea7ee35c785"
+    },
+    {
+      "path": "results/baseline/test/previews/000030.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000030.png",
+      "bytes": 571377,
+      "sha256": "30886ee4c0d9f697bb1c6d5ef31b6c2fbd6a7d03c5ffab1098d1675f4119558e"
+    },
+    {
+      "path": "results/baseline/test/previews/000099.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000099.png",
+      "bytes": 321988,
+      "sha256": "d8e3af643173fce5b1959d8366cb4a8e4e9c3cde2e1c37c0b28340233be95951"
+    },
+    {
+      "path": "results/baseline/test/previews/000103.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000103.png",
+      "bytes": 316128,
+      "sha256": "00fae78f49093bcbc05341377a1dd0e54ae149a94293101cfd0e027a4eb9bff6"
+    },
+    {
+      "path": "results/baseline/test/previews/000127.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000127.png",
+      "bytes": 601410,
+      "sha256": "993cab2e8a9fb101b11faf42a5e2ce2853640c66913f705fbaecd299fd1622ee"
+    },
+    {
+      "path": "results/baseline/test/previews/000228.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000228.png",
+      "bytes": 587952,
+      "sha256": "8bb47c52ac30be87bc99364123dce7abda62ebde32003f3244f01af29dbc2ef4"
+    },
+    {
+      "path": "results/baseline/test/previews/000250.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000250.png",
+      "bytes": 857140,
+      "sha256": "94d728d4af1b3e6e9dbea5d932a29af8e063fa1d5325e34c6fceae49dca6d06a"
+    },
+    {
+      "path": "results/baseline/test/previews/000296.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000296.png",
+      "bytes": 361930,
+      "sha256": "5160e681c844c63b203589f91932dd48d6edc0331f38f57e75698e29937b73c0"
+    },
+    {
+      "path": "results/baseline/test/previews/000825.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000825.png",
+      "bytes": 715669,
+      "sha256": "f86de088441e208bea5c9be78a7be77aca5a883d7dc40b0a04d8317f8c8ce983"
+    },
+    {
+      "path": "results/baseline/test/previews/000867.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000867.png",
+      "bytes": 421905,
+      "sha256": "fe9d4cc21b5efc9a146b2c079185a0ba13376f2b1a6b11e5e3cd08a901f01d5f"
+    },
+    {
+      "path": "results/baseline/test/previews/000954.png",
+      "source": "test_predictions_preview_stl_synthetic_800_30ep_holdout/000954.png",
+      "bytes": 673910,
+      "sha256": "56f772b5e688a579129ec21070f22a38060464098dd59f7be9f9b63e117364da"
+    }
+  ]
+}
