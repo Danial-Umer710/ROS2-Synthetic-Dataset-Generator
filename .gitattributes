@@ -1,0 +1,7 @@
+*.py text eol=lf
+*.md text eol=lf
+requirements.txt text eol=lf
+/dataset/** -text
+/stl_models/*.stl -text
+/weights/*.pt -text
+/results/** -text

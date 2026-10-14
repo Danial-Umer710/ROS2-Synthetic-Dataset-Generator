@@ -1,0 +1,55 @@
+{
+  "initial_weights": "D:\\Projects\\UR_Robotics_Project\\yolov8n-obb.pt",
+  "initial_weights_sha256": "fa6e4cd2691f132875c143135affaa66b5d89394ebb1d07d19770a9b6382c1b8",
+  "resume": false,
+  "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "split_seed": 42,
+  "splits": {
+    "train": {
+      "images": 800,
+      "labels": 800,
+      "instances_by_class": [
+        800,
+        2378,
+        668,
+        672
+      ]
+    },
+    "val": {
+      "images": 100,
+      "labels": 100,
+      "instances_by_class": [
+        100,
+        305,
+        78,
+        83
+      ]
+    },
+    "test": {
+      "images": 100,
+      "labels": 100,
+      "instances_by_class": [
+        100,
+        302,
+        86,
+        78
+      ]
+    }
+  },
+  "training_args": {
+    "data": "D:\\Projects\\UR_Robotics_Project\\dataset\\data.yaml",
+    "epochs": 30,
+    "imgsz": 640,
+    "batch": 16,
+    "device": 0,
+    "workers": 0,
+    "seed": 42,
+    "deterministic": true,
+    "resume": false,
+    "pretrained": true,
+    "patience": 0,
+    "project": "D:\\Projects\\UR_Robotics_Project\\runs\\obb\\UR16e_Labware_Detection",
+    "name": "stl_synthetic_800_30ep_holdout",
+    "exist_ok": false
+  }
+}

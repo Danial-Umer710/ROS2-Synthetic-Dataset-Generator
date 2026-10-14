@@ -1,0 +1,56 @@
+{
+  "split": "val",
+  "images": 100,
+  "checkpoint": "D:\\Projects\\UR_Robotics_Project\\runs\\obb\\UR16e_Labware_Detection\\stl_synthetic_800_30ep_holdout\\weights\\best.pt",
+  "split_seed": 42,
+  "overall": {
+    "precision": 0.9841913455833916,
+    "recall": 0.9715780393999911,
+    "mAP50": 0.9847022417027584,
+    "mAP50-95": 0.8979497433804109
+  },
+  "per_class": [
+    {
+      "class_id": 0,
+      "name": "Tube_Holder",
+      "instances": 100,
+      "precision": 0.9959724730463421,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50-95": 0.9678190276754371
+    },
+    {
+      "class_id": 1,
+      "name": "Glass_Tube",
+      "instances": 305,
+      "precision": 0.9697919727129315,
+      "recall": 0.9473254415048148,
+      "mAP50": 0.9793732843093134,
+      "mAP50-95": 0.8462417060731934
+    },
+    {
+      "class_id": 2,
+      "name": "Slide_Holder",
+      "instances": 78,
+      "precision": 0.9744780876780221,
+      "recall": 0.9871794871794872,
+      "mAP50": 0.9844105736630044,
+      "mAP50-95": 0.8941081155527723
+    },
+    {
+      "class_id": 3,
+      "name": "Eppendorf_Rack",
+      "instances": 83,
+      "precision": 0.9965228488962709,
+      "recall": 0.9518072289156626,
+      "mAP50": 0.9800251088387162,
+      "mAP50-95": 0.883630124220241
+    }
+  ],
+  "speed_ms_per_image": {
+    "preprocess": 1.5113610003027134,
+    "inference": 8.437411999912001,
+    "loss": 0.0005859999509993941,
+    "postprocess": 4.898156999988714
+  }
+}

@@ -1,0 +1,8 @@
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: Tube_Holder
+  1: Glass_Tube
+  2: Slide_Holder
+  3: Eppendorf_Rack
