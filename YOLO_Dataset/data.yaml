@@ -1,6 +1,0 @@
-path: D:/Projects/UR_Robotics_Project/YOLO_Dataset
-train: images/train
-val: images/train  
-
-names:
-  0: Glass_Slide

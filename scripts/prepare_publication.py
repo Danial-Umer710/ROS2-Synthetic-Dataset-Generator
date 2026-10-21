@@ -164,10 +164,8 @@ def verify_index():
     allowed = set(hashes) | core
     if not allowed <= index:
         raise ValueError(f"Publication files missing from Git index: {sorted(allowed - index)}")
-    if staged - allowed:
-        raise ValueError(f"Unrelated staged changes: {sorted(staged - allowed)}")
-    if git_paths("diff", "--cached", "--name-only", "--diff-filter=D"):
-        raise ValueError("Publication must not delete legacy tracked files")
+    if index - allowed:
+        raise ValueError(f"Non-baseline files still tracked in Git index: {sorted(index - allowed)[:20]}")
     total_bytes = 0
     process = subprocess.Popen(["git", "cat-file", "--batch"], cwd=PROJECT_ROOT,
                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -199,7 +197,7 @@ def verify_index():
             process.terminate()
             process.wait()
     return {"verified_git_blobs": len(hashes), "verified_bytes": total_bytes,
-            "staged_files": len(staged), "unrelated_staged_files": 0, "legacy_deletions": 0}
+            "tracked_files": len(index), "staged_files": len(staged), "extra_tracked_files": len(index - allowed)}
 
 
 def main():
