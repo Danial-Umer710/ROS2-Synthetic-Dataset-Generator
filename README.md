@@ -3,27 +3,30 @@
 **A reproducible synthetic-data baseline for oriented detection of transparent and matte laboratory objects.**
 
 > **Branch Structure**
-> - **`main` (this branch):** Clean v2 CAD/STL procedural Blender baseline (`blender/generate_synthetic_dataset.py`), 4 STL labware meshes (`stl_models/`), 1,000-image 80/10/10 split (`dataset/`), trained YOLOv8n-OBB weights (`weights/`), and complete training/validation/test results and previews (`results/baseline/`).
-> - **`dev`:** Active development branch for upcoming Sim2Real improvements (loose glass tube placement next to holder, distractor/hindrance models, and Docker reproducibility).
-> - **`blenderproc`:** Dedicated branch for migrating the synthetic data generator to BlenderProc.
+> - **`blenderproc` (this branch):** The `main` baseline **plus** the distractor/hindrance and loose-tube extension described in [Distractor and loose-tube extension](#distractor-and-loose-tube-extension-this-branch): two unlabelled translucent Eppendorf distractor meshes (`stl_models/distractors/`), a second 1,000-image 80/10/10 dataset (`dataset_blenderproc/`), a second trained model (`weights/blenderproc/`), and its results and cross-evaluation against the baseline (`results/blenderproc/`).
+> - **`main`:** Clean v2 CAD/STL procedural Blender baseline (`blender/generate_synthetic_dataset.py`), 4 STL labware meshes (`stl_models/`), 1,000-image 80/10/10 split (`dataset/`), trained YOLOv8n-OBB weights (`weights/`), and complete training/validation/test results and previews (`results/baseline/`).
+> - **`dev`:** Active development branch for upcoming Sim2Real improvements (Docker reproducibility, further scene variation).
 > - **`legacy-v1`:** Archived v1 Blender HTTP Server pipeline, the 4,000-image `YOLO_Main_Dataset`, the 50-epoch `ur16e_main_run_4000-3` training run (`99.5% mAP@50`), and `predict-12` test predictions.
 
-This project connects STL geometry, procedural Blender rendering, geometry-derived oriented bounding-box (OBB) annotations, and YOLOv8n-OBB training. Its intended application is laboratory perception for a UR16e robot. The published experiment uses **1,000 synthetic images**, a fixed **800/100/100 train/validation/test split**, and a fresh **30-epoch** fine-tuning run from the original DOTA-pretrained `yolov8n-obb.pt`.
+This project connects STL geometry, procedural Blender rendering, geometry-derived oriented bounding-box (OBB) annotations, and YOLOv8n-OBB training. Its intended application is laboratory perception for a UR16e robot. Each published experiment uses **1,000 synthetic images**, a fixed **800/100/100 train/validation/test split**, and a fresh **30-epoch** fine-tuning run from the original DOTA-pretrained `yolov8n-obb.pt`.
 
-| Published baseline | Result |
-|---|---:|
-| Held-out validation mAP50–95 | **89.79%** |
-| Held-out test mAP50–95 | **88.29%** |
-| Held-out test mAP50 | **97.16%** |
-| Image size | 640 × 640 RGB |
-| Training hardware | NVIDIA GeForce RTX 4050 Laptop GPU, 6 GB |
+| Held-out synthetic result (mAP50–95) | Baseline model (`weights/best.pt`) | Distractor model (`weights/blenderproc/best.pt`) |
+|---|---:|---:|
+| Baseline test split (`dataset/`, no distractors, tubes only in holder) | **88.29%** | **88.27%** |
+| Distractor test split (`dataset_blenderproc/`, 2–6 distractors, 1–3 loose tubes) | **78.57%** | **87.92%** |
+| Own validation split | 89.79% | 88.18% |
+
+Both models are YOLOv8n-OBB at 640 × 640, trained for 30 epochs on an NVIDIA GeForce RTX 4050 Laptop GPU (6 GB). The distractor model keeps the baseline's accuracy on the clean scenes while recovering **9.4 mAP50–95 points** on scenes with distractors and loose tubes, where the baseline model misses lying tubes and labels distractors as `Slide_Holder` (details [below](#results-compared-to-the-baseline)).
 
 > **Scope:** these are image-disjoint, held-out **synthetic** results, not real-camera or robot-grasp results. No real-world camera evaluation has been performed. An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
 
-![Example held-out test prediction with oriented boxes and confidence scores](results/baseline/test/previews/000228.png)
+| Baseline test prediction (`main` model, clean scene) | Distractor-model test prediction (this branch; unboxed Eppendorf distractors, boxed loose tube) |
+|---|---|
+| ![Baseline held-out test prediction](results/baseline/test/previews/000228.png) | ![Distractor held-out test prediction](results/blenderproc/test/previews/000228.png) |
 
 ## Contents
 
+- [Distractor and loose-tube extension (this branch)](#distractor-and-loose-tube-extension-this-branch)
 - [Repository and published assets](#repository-and-published-assets)
 - [Classes, geometry, and assembly](#classes-geometry-and-assembly)
 - [Dataset and split integrity](#dataset-and-split-integrity)
@@ -35,16 +38,204 @@ This project connects STL geometry, procedural Blender rendering, geometry-deriv
 - [Limitations and next experiments](#limitations-and-next-experiments)
 - [Provenance and licensing](#provenance-and-licensing)
 
+## Distractor and loose-tube extension (this branch)
+
+This branch implements two items of reviewer feedback on the baseline: (1) **hindrance / distractor objects** that look like labware but must *not* be detected, and (2) **loose `Glass_Tube` instances outside the holder**, lying on the bench as well as standing, so the detector does not learn that tubes only ever appear upright inside a rack. The branch is named for the planned BlenderProc migration; the implemented generator is still the headless `bpy` pipeline in [`blender/generate_synthetic_dataset.py`](blender/generate_synthetic_dataset.py), extended as described here. The BlenderProc port itself remains future work ([`blenderproc/README.md`](blenderproc/README.md)). Everything in the later sections of this README (camera, projection, OBB, lighting, split, training protocol) applies unchanged to the extension; only the scene-composition additions are documented in this section.
+
+### Added assets
+
+| File | Role | Label | Imported bounding box (mm) |
+|---|---|---|---|
+| `stl_models/distractors/eppendorf_big.stl` | Distractor (hindrance) | **none** | 21.0 × 21.0 × 133.0 |
+| `stl_models/distractors/eppendorf0p5ml.stl` | Distractor (hindrance) | **none** | 10.0 × 17.6 × 31.3 |
+| `stl_models/Tube.stl` (existing) | Additional **loose** instances on the bench | `1: Glass_Tube` | 116.4 long, 30 mm body |
+
+Both distractor meshes are imported with the same millimetre-to-metre scale, Y-up fix, welding, and ground re-centring as the target meshes, and their longest bounding-box axis is aligned with $z$. The class list is unchanged: `0: Tube_Holder`, `1: Glass_Tube`, `2: Slide_Holder`, `3: Eppendorf_Rack`.
+
+### Label policy: distractors are pure negatives
+
+Distractor objects carry no `class_id` property and are never appended to the generator's `S.labelled` list; `compute_labels()` iterates only over that list, and `build_scene()` raises if a distractor is ever found in it. Consequently no OBB line is written for a distractor, in any pose, even when it is in front of a target. The loose tubes are linked duplicates of the tube mesh with `class_id = 1` and **are** in `S.labelled`, so they receive the same visible-silhouette minimum-area OBB as the tubes inside the holder.
+
+For the visibility ray-cast used by `--label-mode visible`, distractors are flagged see-through (`material_kind = "glass"`) exactly like the glass targets: a target standing behind a translucent distractor is boxed on its own visible silhouette rather than being cut by the distractor's outline.
+
+With `--scene-json` the generator additionally writes `scene/<frame>.json` per frame listing every rendered mesh with its `class_id` (`null` for distractors), pose, location, and whether it produced a label line. These files are published in [`dataset_blenderproc/scene/`](dataset_blenderproc/scene/) and are the machine-checkable evidence for the policy: over the 1,000 frames, **3,993 distractor instances** were rendered and **0** were labelled; **1,993 loose tubes** (994 upright, 999 lying) were rendered and labelled whenever their visible fraction passed the existing filters.
+
+### Resting poses on the bench
+
+Let $V=\{v_i\}$ be the 3-D convex-hull vertices of a mesh (standing on $z=0$, centred on the $z$ axis). A per-instance rotation is drawn as
+
+$$
+R_{\text{upright}}=R_z(\psi),\qquad
+R_{\text{lying}}=R_z(\psi)\,R_x\!\left(\tfrac{\pi}{2}\right)R_z(\varphi),\qquad
+\psi,\varphi\sim\mathcal U[0,2\pi),
+$$
+
+so a lying object has its long axis horizontal, a uniformly random yaw $\psi$ about the vertical, and a uniformly random spin $\varphi$ about its own axis. Loose tubes lie with probability **0.5**, distractors with probability **0.7**. The object is then rested on the bench analytically rather than by physics simulation:
+
+$$
+z_0=-\min_i\,(Rv_i)_z,\qquad
+c=\tfrac12\bigl(\min_i (Rv_i)_{xy}+\max_i (Rv_i)_{xy}\bigr),\qquad
+r=\max_i\bigl\|(Rv_i)_{xy}-c\bigr\|.
+$$
+
+The instance is placed at $(x-c_x,\;y-c_y,\;z_0)$, so its lowest hull vertex touches $z=0$ and the centre of its horizontal footprint lands on the sampled bench point $(x,y)$; $r$ is the radius of the circle enclosing that footprint. A conical tube lying on its side therefore rests on its cap rim and tip, as in the previews below.
+
+### Collision-free placement
+
+Every object on the bench is represented by its footprint circle $(x,y,r)$ in a per-frame list. A candidate position is accepted only if
+
+$$
+\sqrt{(x-x_j)^2+(y-y_j)^2}>r+r_j+\varepsilon\quad\text{for all placed }j,
+$$
+
+with $\varepsilon = 3\,\text{mm}$ for loose tubes and distractors (the inherited loose rack/stand placement uses 10 mm). The holder contributes its own footprint circle at the origin; tubes inside the holder are inside that circle and are not added separately. Because enclosing circles are conservative, meshes never interpenetrate. Up to 60 candidates are drawn per object; an object whose candidates all fail is hidden for that frame (this happened **0** times in the published 1,000 frames).
+
+Placement order per frame is: holder → loose rack and stand → loose tubes → camera → distractors.
+
+- **Loose tubes:** $n\sim\mathcal U\{1,2,3\}$ instances, each at polar angle $\theta\sim\mathcal U[0,2\pi)$ and distance $d\sim\mathcal U\,[\,r_h+r+0.005,\; r_h+r+0.08\,]$ metres from the holder centre, where $r_h$ is the holder footprint radius. They are "next to the holder", not scattered across the bench.
+- **Distractors:** $n\sim\mathcal U\{2,\dots,6\}$ instances in total, each drawing one of the two meshes uniformly. Each instance is placed in one of two modes:
+  - *Hindering* (probability **0.35**): a target $t$ currently visible in the scene (holder, loose rack/stand, or any tube) is chosen uniformly; with $\hat d$ the unit horizontal vector from the target centre toward the camera position, $\hat d_\perp$ its perpendicular, the distractor is placed at
+    $$
+    p = t + \hat d\,(r_t + r + g) + \hat d_\perp\,\lambda\, r_t,\qquad g\sim\mathcal U[2\,\text{mm},30\,\text{mm}],\ \ \lambda\sim\mathcal U[-0.5,0.5],
+    $$
+    i.e. just in front of the target as seen from the camera, so it partially occludes it. If that position violates the collision test the instance falls back to random mode.
+  - *Random* (otherwise): $\theta\sim\mathcal U[0,2\pi)$, $d\sim\mathcal U\,[\,r_h+r+0.005,\; r_h+r+0.20\,]$.
+
+The camera is sampled before the distractors so the hindering direction is known; the camera model itself is unchanged.
+
+### Distractor material
+
+Distractors use a Principled BSDF with transmission weight 1.0 and IOR 1.49 (polypropylene), re-randomised per frame per mesh:
+
+| Case | Probability | Roughness | Base colour |
+|---|---:|---|---|
+| Clear, glass-like | 0.3 | $\mathcal U[0,0.1]$ | per-channel $\mathcal U[0.9,1.0]$ |
+| Frosted / translucent polypropylene | 0.7 | $\mathcal U[0.25,0.6]$ | HSV with $h\sim\mathcal U[0,1)$, $s\sim\mathcal U[0.05,0.3]$, $v\sim\mathcal U[0.85,1.0]$ |
+
+Target materials, bench, world, lighting and exposure randomisation are those of the baseline.
+
+### Dataset `dataset_blenderproc/`
+
+Generated with seed 42, 64 Cycles samples, 640 × 640, visible-silhouette labels, in **3,787 s (3.79 s/frame)** on the RTX 4050 (OptiX). The exposure guard re-rendered 204 of the 1,000 frames. The directory was split with the same `scripts/yolo_dataset_splitter.py` (seed 42) and passes the same integrity checks (1,000 pairs, no shared stems, no duplicate decoded pixels, all classes in every split); memberships and hashes are frozen in [`dataset_blenderproc/split_manifest.json`](dataset_blenderproc/split_manifest.json). The published directory is approximately **484 MiB**.
+
+| Split | Images | Tube_Holder | Glass_Tube | Slide_Holder | Eppendorf_Rack | Total labelled instances | Distractor instances (unlabelled) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Train | 800 | 800 | 3,962 | 667 | 667 | **6,096** | — |
+| Validation | 100 | 100 | 498 | 79 | 82 | **759** | — |
+| Test | 100 | 100 | 497 | 88 | 79 | **764** | — |
+| **Total** | **1,000** | **1,000** | **4,957** | **834** | **828** | **7,619** | **3,993** |
+
+`Glass_Tube` instances rise from 2,985 in the baseline to 4,957 because of the loose tubes. Distractor counts per split are not tracked by the splitter (they have no labels); the per-frame totals are in the scene JSON files.
+
+### Smoke test (8 frames, ground-truth overlays)
+
+Before the full render an 8-frame smoke test (`--num-images 8 --samples 32 --seed 7 --scene-json`) was rendered and its labels drawn with `scripts/visualize_obb_labels.py`. The overlays and scene JSONs are published in [`results/blenderproc/smoke/`](results/blenderproc/smoke/). Boxes appear on the holder, the tubes in the holder, the loose tubes (upright and lying), the slide stand and the rack; none appear on the Eppendorf distractors, including the frosted one in the foreground of frame 7.
+
+| Smoke frame 000002 (three lying loose tubes, two small distractors) | Smoke frame 000007 (foreground distractor overlapping the holder, unboxed) |
+|---|---|
+| ![Smoke 000002](results/blenderproc/smoke/previews/000002.png) | ![Smoke 000007](results/blenderproc/smoke/previews/000007.png) |
+
+### Training
+
+Run **`stl_synthetic_distractors_800_30ep`**: identical recipe to the baseline (original DOTA-pretrained `yolov8n-obb.pt`, 800 training images, 30 epochs, 640 / batch 16, seed 42, deterministic, `patience=0`, device 0, workers 0), completed in 0.25 h. Checkpoint selection used the distractor validation split only. The selected `weights/blenderproc/best.pt` SHA256 is
+
+```text
+1de4a36fe87b550b24d5ef71cda83fb8dc18cfe653607d880853f6f3f50d066f
+```
+
+![Distractor-model training and validation curves across 30 epochs](results/blenderproc/training/results.png)
+
+### Results compared to the baseline
+
+All four combinations of {baseline model, distractor model} × {baseline test split, distractor test split} were evaluated with the same frozen-checkpoint evaluator (batch 16, 640 px, NMS IoU 0.7, confidence cutoff 0.001). Values are percentages; exact values are in the linked `metrics.json` files.
+
+| Model | Evaluation split | Images | Instances | Precision | Recall | mAP50 | mAP50–95 | Metrics |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| Distractor model | Distractor **validation** | 100 | 759 | 98.97 | 94.39 | 97.44 | **88.18** | [json](results/blenderproc/validation/metrics.json) |
+| Distractor model | Distractor **test** | 100 | 764 | 98.39 | 94.95 | 97.58 | **87.92** | [json](results/blenderproc/test/metrics.json) |
+| Distractor model | Baseline test | 100 | 566 | 98.38 | 96.56 | 97.49 | **88.27** | [json](results/blenderproc/cross_evaluation/new_model_on_baseline_test/metrics.json) |
+| Baseline model | Baseline test | 100 | 566 | 97.04 | 95.76 | 97.16 | **88.29** | [json](results/baseline/test/metrics.json) |
+| Baseline model | Distractor test | 100 | 764 | 86.06 | 82.85 | 88.82 | **78.57** | [json](results/blenderproc/cross_evaluation/baseline_model_on_distractors_test/metrics.json) |
+| Baseline model | Distractor validation | 100 | 759 | 85.61 | 83.32 | 88.79 | **79.69** | [json](results/blenderproc/cross_evaluation/baseline_model_on_distractors_val/metrics.json) |
+
+Per-class AP50–95 on the **distractor test split**, and on the **baseline test split** for the new model:
+
+| Class | Distractor model, distractor test | Baseline model, distractor test | Distractor model, baseline test | Baseline model, baseline test |
+|---|---:|---:|---:|---:|
+| Tube_Holder | 95.75 | 96.65 | 95.51 | 96.23 |
+| Glass_Tube | **86.56** | **62.15** | 86.34 | 85.86 |
+| Slide_Holder | **85.07** | **71.16** | 87.56 | 87.05 |
+| Eppendorf_Rack | 84.30 | 84.31 | 83.67 | 84.00 |
+
+Observations:
+
+1. **The baseline model does not generalise to the new scene composition.** On the distractor test split its `Glass_Tube` recall falls to 55.4% (it misses most lying/loose tubes, which it never saw) and its `Slide_Holder` precision falls to 52.6%: in the annotated batches ([example](results/blenderproc/cross_evaluation/baseline_model_on_distractors_test/val_batch0_pred.jpg)) it labels lying tubes and the large Eppendorf distractor as `Slide_Holder` with confidence ≈ 0.9. Its holder and rack scores are unchanged.
+2. **The distractor model does not regress on the clean domain.** 88.27% versus 88.29% mAP50–95 on the baseline test split, with all per-class scores within ±0.5 points; its `Glass_Tube` AP50–95 on that split is slightly higher (86.34 vs 85.86).
+3. **Distractors are ignored, loose tubes are detected.** In the annotated distractor-test batches ([example](results/blenderproc/test/val_batch0_pred.jpg)) the large and small Eppendorf tubes receive no boxes while upright and lying loose tubes are boxed as `Glass_Tube`.
+4. **The harder split costs about 0.4 points.** 87.92% on the distractor test versus 88.27% on the baseline test for the same model; `Slide_Holder` and `Eppendorf_Rack` remain the weakest classes, as in the baseline. Both splits are 100 images, so differences below roughly one point should not be over-interpreted.
+
+As with the baseline, these are same-renderer synthetic holdouts. The distractor result shows robustness to *rendered* look-alike objects, not to real laboratory clutter.
+
+| Distractor validation PR curve | Distractor test PR curve |
+|---|---|
+| ![Distractor validation PR curve](results/blenderproc/validation/BoxPR_curve.png) | ![Distractor test PR curve](results/blenderproc/test/BoxPR_curve.png) |
+
+| Ground truth: distractor validation batch 0 | Predictions: distractor validation batch 0 |
+|---|---|
+| ![Distractor validation batch 0 labels](results/blenderproc/validation/val_batch0_labels.jpg) | ![Distractor validation batch 0 predictions](results/blenderproc/validation/val_batch0_pred.jpg) |
+
+Ten fixed-seed test previews (`random.Random(42).sample(sorted(test_stems), 10)`, confidence 0.25, NMS IoU 0.7), predictions only:
+
+| Test example | Test example |
+|---|---|
+| ![Test 000030](results/blenderproc/test/previews/000030.png) | ![Test 000099](results/blenderproc/test/previews/000099.png) |
+| ![Test 000103](results/blenderproc/test/previews/000103.png) | ![Test 000127](results/blenderproc/test/previews/000127.png) |
+| ![Test 000228](results/blenderproc/test/previews/000228.png) | ![Test 000250](results/blenderproc/test/previews/000250.png) |
+| ![Test 000296](results/blenderproc/test/previews/000296.png) | ![Test 000825](results/blenderproc/test/previews/000825.png) |
+| ![Test 000867](results/blenderproc/test/previews/000867.png) | ![Test 000954](results/blenderproc/test/previews/000954.png) |
+
+The full 100-image prediction record is [`results/blenderproc/test/predictions.json`](results/blenderproc/test/predictions.json); SHA256 values of every published extension artifact are in [`results/blenderproc/checksums.sha256`](results/blenderproc/checksums.sha256).
+
+### Reproducing the extension
+
+```powershell
+# 8-frame smoke test with ground-truth overlays and per-frame scene JSON
+& "C:\Program Files\Blender Foundation\Blender 4.3\blender.exe" -b -P "blender/generate_synthetic_dataset.py" -- --num-images 8 --samples 32 --seed 7 --scene-json --out-dir "dataset_blenderproc_smoke"
+python scripts/visualize_obb_labels.py --dataset dataset_blenderproc_smoke --all
+
+# full 1,000-frame render into a NEW directory, then the frozen 800/100/100 split
+& "C:\Program Files\Blender Foundation\Blender 4.3\blender.exe" -b -P "blender/generate_synthetic_dataset.py" -- --num-images 1000 --samples 64 --seed 42 --scene-json --out-dir "dataset_blenderproc_reproduced"
+python scripts/yolo_dataset_splitter.py --dataset dataset_blenderproc_reproduced --seed 42 --apply
+python scripts/yolo_dataset_splitter.py --dataset dataset_blenderproc_reproduced --seed 42 --check
+
+# fresh 30-epoch run (validates best.pt, predicts the test split, saves ten previews)
+python -u scripts/train_yolo.py --dataset dataset_blenderproc --weights yolov8n-obb.pt --epochs 30 --imgsz 640 --batch 16 --device 0 --name stl_synthetic_distractors_800_30ep_reproduction
+
+# frozen-checkpoint evaluations, including the cross-evaluation against the baseline
+python scripts/evaluate_yolo.py --weights weights/blenderproc/best.pt --dataset dataset_blenderproc --split test --device 0 --output runs/obb/reproduce_distractor_test
+python scripts/evaluate_yolo.py --weights weights/blenderproc/best.pt --dataset dataset --split test --device 0 --output runs/obb/reproduce_new_model_on_baseline_test
+python scripts/evaluate_yolo.py --weights weights/best.pt --dataset dataset_blenderproc --split test --device 0 --output runs/obb/reproduce_baseline_model_on_distractor_test
+```
+
+The generator on this branch always adds distractors and loose tubes; the published `dataset/` baseline was rendered with the `main` version of the script. Verify the published extension dataset with `python scripts/yolo_dataset_splitter.py --dataset dataset_blenderproc --check`.
+
+---
+
+The remainder of this README documents the inherited **baseline** (`main`) pipeline, dataset, and results, which this branch reuses unchanged.
+
 ## Repository and published assets
 
 ```text
 blender/
-  generate_synthetic_dataset.py      Standalone headless Blender generator
+  generate_synthetic_dataset.py      Standalone headless Blender generator (this branch: + distractors, loose tubes, --scene-json)
 stl_models/
   TubeHolder.stl
   Tube.stl
   Slide_holder.stl
   eppendorf_tarto.stl
+  distractors/                       Unlabelled hindrance meshes (this branch)
+    eppendorf_big.stl
+    eppendorf0p5ml.stl
 scripts/
   yolo_dataset_splitter.py           Split creation and integrity checks
   train_yolo.py                      Fresh training, validation, test previews
@@ -52,19 +243,30 @@ scripts/
   visualize_obb_labels.py            Ground-truth label overlays
   prepare_publication.py            Artifact copying and publication checksums
 weights/
-  best.pt                           Validation-selected checkpoint
-  last.pt                           Final training checkpoint
+  best.pt                           Baseline validation-selected checkpoint
+  last.pt                           Baseline final training checkpoint
+  blenderproc/                      Distractor model (this branch)
+    best.pt
+    last.pt
 results/baseline/
   training/                         Original training curves, batches, CSV, arguments, provenance
   validation/                       Standalone validation metrics, curves, and annotated batches
   test/                             Test metrics, curves, annotated batches, predictions.json
     previews/                       Ten preselected test prediction PNGs
   publication_manifest.json         Source-to-publication mapping and SHA256 checksums
+results/blenderproc/                Distractor model (this branch), same layout as results/baseline
+  training/  validation/  test/previews/
+  cross_evaluation/                 {new_model_on_baseline_test, baseline_model_on_distractors_test, baseline_model_on_distractors_val}
+  smoke/                            8-frame smoke-test overlays and scene JSONs
+  checksums.sha256
 dataset/
   data.yaml                         Portable YOLO configuration
   split_manifest.json               Frozen memberships, image/pixel/label hashes, instance counts
   images/{train,val,test}/           800 / 100 / 100 original PNGs
   labels/{train,val,test}/           Matching OBB TXT files
+dataset_blenderproc/                Distractor + loose-tube dataset (this branch), same layout
+  data.yaml  split_manifest.json  images/  labels/
+  scene/                            Per-frame object/pose/label-membership JSON
 requirements.txt
 .gitattributes
 .gitignore
@@ -589,7 +791,7 @@ The publication audit reports dataset integrity and asset sizes. `prepare_public
 3. **Limited sample size.** Each holdout contains only 100 images. Multiple instances within an image are correlated; the tables are point estimates, not statistical certification of a deployment failure rate.
 4. **Approximate annotations.** Vertex-sampled visibility, see-through rather than refracted visibility rays, frame-area filtering, and coordinate clamping at image borders can differ from a manually defined visible silhouette.
 5. **Materials must match the physical labware.** Glass assignments for the loose stand and rack, mesh wall thickness, caps, liquids, printing, and surface finish need comparison with actual objects.
-6. **Context bias and negatives.** The current images always include the main holder, and assembly ensures at least one tube. A future dataset should include relevant empty scenes, empty racks, distractors, and additional arrangements. The current splitter intentionally validates this specific 1,000-image, nonempty-label snapshot; a broader dataset needs a versioned configuration rather than bypassing its checks.
+6. **Context bias and negatives.** The images always include the main holder, and assembly ensures at least one tube. This branch adds look-alike distractors and loose tubes next to the holder; empty scenes, empty racks, tubes far from the holder, and real clutter are still absent. The splitter intentionally validates a specific 1,000-image, nonempty-label snapshot; a broader dataset needs a versioned configuration rather than bypassing its checks.
 7. **OBB is not robot pose.** Visible-extent tube boxes can cover only the exposed part above an opaque holder. Camera calibration, depth/pose estimation, grasp-point validation, temporal stability, and supervised pick tests remain necessary.
 8. **Future robotics observability.** ROS2/UR16e integration and Prometheus/Grafana monitoring of inference latency, detection failures, and robot outcomes are planned work, not evaluated components of this release.
 

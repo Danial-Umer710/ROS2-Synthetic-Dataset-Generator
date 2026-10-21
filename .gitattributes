@@ -5,3 +5,6 @@ requirements.txt text eol=lf
 /stl_models/*.stl -text
 /weights/*.pt -text
 /results/** -text
+/dataset_blenderproc/** -text
+/stl_models/distractors/*.stl -text
+/weights/blenderproc/*.pt -text
