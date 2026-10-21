@@ -1,0 +1,106 @@
+{
+  "objects": [
+    {
+      "name": "Tube_Holder",
+      "class_id": 0,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Glass_Tube",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "hole",
+      "location": [
+        0.023341091349720955,
+        -0.01144433207809925,
+        0.009000003337860107
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Eppendorf_Rack",
+      "class_id": 3,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        0.09444034844636917,
+        -0.1692923605442047,
+        0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Distractor_Eppendorf_Big.002",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        0.29904061555862427,
+        -0.007819895632565022,
+        0.010493322275578976
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_Big.004",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        -0.21513144671916962,
+        0.1981906294822693,
+        0.010496883653104305
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Glass_Tube.001",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "hole",
+      "location": [
+        -0.056874897330999374,
+        0.02339777536690235,
+        0.009000003337860107
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Glass_Tube.loose.001",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "lying",
+      "location": [
+        0.06340005993843079,
+        0.10297606140375137,
+        0.017502760514616966
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Bench",
+      "class_id": null,
+      "distractor": false,
+      "pose": null,
+      "location": [
+        0.0,
+        0.0,
+        -0.00019999999494757503
+      ],
+      "labelled": false
+    }
+  ],
+  "placement": {
+    "loose_tubes_requested": 1,
+    "loose_tubes_hidden": 0,
+    "distractors_requested": 2,
+    "distractors_hidden": 0
+  }
+}

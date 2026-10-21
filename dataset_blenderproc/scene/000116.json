@@ -1,0 +1,190 @@
+{
+  "objects": [
+    {
+      "name": "Tube_Holder",
+      "class_id": 0,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Glass_Tube",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "hole",
+      "location": [
+        0.020668599754571915,
+        0.01591363176703453,
+        0.009000003337860107
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Slide_Holder",
+      "class_id": 2,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        0.14502888917922974,
+        0.06634754687547684,
+        0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Eppendorf_Rack",
+      "class_id": 3,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        0.17976674437522888,
+        -0.0968312919139862,
+        0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Distractor_Eppendorf_Big",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        0.213065505027771,
+        0.10602472722530365,
+        0.010488621890544891
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_Big.001",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        0.002454464789479971,
+        -0.12326498329639435,
+        0.010496211238205433
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_Big.002",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        0.13059094548225403,
+        0.2302587777376175,
+        0.01048630103468895
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_0p5ml",
+      "class_id": null,
+      "distractor": true,
+      "pose": "upright",
+      "location": [
+        0.1999342143535614,
+        -0.003064409364014864,
+        -0.0
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_0p5ml.003",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        -0.08716800808906555,
+        0.1892099231481552,
+        0.005339939147233963
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_0p5ml.005",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        0.20488329231739044,
+        0.0784124881029129,
+        0.006177476141601801
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Glass_Tube.001",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "hole",
+      "location": [
+        -0.019111141562461853,
+        -0.017697352916002274,
+        0.009000003337860107
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Glass_Tube.002",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "hole",
+      "location": [
+        -0.04623040556907654,
+        -0.04057403281331062,
+        0.009000003337860107
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Glass_Tube.loose.000",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "lying",
+      "location": [
+        -0.18635402619838715,
+        -0.001149905496276915,
+        0.017486192286014557
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Glass_Tube.loose.001",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        0.09008336067199707,
+        0.14217624068260193,
+        -0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Bench",
+      "class_id": null,
+      "distractor": false,
+      "pose": null,
+      "location": [
+        0.0,
+        0.0,
+        -0.00019999999494757503
+      ],
+      "labelled": false
+    }
+  ],
+  "placement": {
+    "loose_tubes_requested": 2,
+    "loose_tubes_hidden": 0,
+    "distractors_requested": 6,
+    "distractors_hidden": 0
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "objects": [
+    {
+      "name": "Tube_Holder",
+      "class_id": 0,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Glass_Tube",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "hole",
+      "location": [
+        -0.016123609617352486,
+        -0.059390004724264145,
+        0.009000003337860107
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Slide_Holder",
+      "class_id": 2,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        -0.10494311153888702,
+        -0.11468777805566788,
+        0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Eppendorf_Rack",
+      "class_id": 3,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        0.16001580655574799,
+        -0.09546356648206711,
+        0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Distractor_Eppendorf_Big.003",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        0.00515272980555892,
+        -0.24864625930786133,
+        0.010497769340872765
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_Big.004",
+      "class_id": null,
+      "distractor": true,
+      "pose": "upright",
+      "location": [
+        -0.13807840645313263,
+        -0.1767766922712326,
+        -0.0
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_Big.005",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        0.12055345624685287,
+        0.11568323522806168,
+        0.010488737374544144
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_0p5ml.001",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        -0.18831798434257507,
+        0.10821211338043213,
+        0.008724010549485683
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Distractor_Eppendorf_0p5ml.005",
+      "class_id": null,
+      "distractor": true,
+      "pose": "lying",
+      "location": [
+        0.14965134859085083,
+        -0.22927537560462952,
+        0.005088565871119499
+      ],
+      "labelled": false
+    },
+    {
+      "name": "Glass_Tube.001",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "hole",
+      "location": [
+        -0.00754519272595644,
+        -0.024899547919631004,
+        0.009000003337860107
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Glass_Tube.002",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "hole",
+      "location": [
+        0.005114840809255838,
+        0.02548523247241974,
+        0.009000003337860107
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Glass_Tube.loose.001",
+      "class_id": 1,
+      "distractor": false,
+      "pose": "upright",
+      "location": [
+        -0.11638433486223221,
+        0.08415662497282028,
+        -0.0
+      ],
+      "labelled": true
+    },
+    {
+      "name": "Bench",
+      "class_id": null,
+      "distractor": false,
+      "pose": null,
+      "location": [
+        0.0,
+        0.0,
+        -0.00019999999494757503
+      ],
+      "labelled": false
+    }
+  ],
+  "placement": {
+    "loose_tubes_requested": 1,
+    "loose_tubes_hidden": 0,
+    "distractors_requested": 5,
+    "distractors_hidden": 0
+  }
+}

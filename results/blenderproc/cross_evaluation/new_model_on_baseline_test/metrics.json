@@ -1,0 +1,71 @@
+{
+  "split": "test",
+  "images": 100,
+  "instances": 566,
+  "checkpoint": "D:\\Projects\\UR_Robotics_Project\\runs\\obb\\UR16e_Labware_Detection\\stl_synthetic_distractors_800_30ep\\weights\\best.pt",
+  "checkpoint_sha256": "1de4a36fe87b550b24d5ef71cda83fb8dc18cfe653607d880853f6f3f50d066f",
+  "split_seed": 42,
+  "split_manifest_sha256": "13ea1e441197b1051116b534c90b787c76a6dce668d3119793f027373a54157d",
+  "configuration": {
+    "imgsz": 640,
+    "batch": 16,
+    "device": "0",
+    "device_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+    "workers": 0,
+    "confidence_cutoff": 0.001,
+    "nms_iou": 0.7,
+    "half": false,
+    "ultralytics": "8.4.127",
+    "torch": "2.5.1+cu121"
+  },
+  "overall": {
+    "precision": 0.9838145004987511,
+    "recall": 0.9656010437498217,
+    "mAP50": 0.9748654258469364,
+    "mAP50-95": 0.8827180689804877
+  },
+  "per_class": [
+    {
+      "class_id": 0,
+      "name": "Tube_Holder",
+      "instances": 100,
+      "precision": 0.9957928504040635,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50-95": 0.9551463547675599
+    },
+    {
+      "class_id": 1,
+      "name": "Glass_Tube",
+      "instances": 302,
+      "precision": 0.9695977435898303,
+      "recall": 0.9504329780975564,
+      "mAP50": 0.9761024220801778,
+      "mAP50-95": 0.8634256175325218
+    },
+    {
+      "class_id": 2,
+      "name": "Slide_Holder",
+      "instances": 86,
+      "precision": 1.0,
+      "recall": 0.9632532481837817,
+      "mAP50": 0.984426532769556,
+      "mAP50-95": 0.8756433530932272
+    },
+    {
+      "class_id": 3,
+      "name": "Eppendorf_Rack",
+      "instances": 78,
+      "precision": 0.9698674080011106,
+      "recall": 0.9487179487179487,
+      "mAP50": 0.9439327485380118,
+      "mAP50-95": 0.8366569505286418
+    }
+  ],
+  "speed_ms_per_image": {
+    "preprocess": 0.795944000055897,
+    "inference": 5.370304000025499,
+    "loss": 0.0005780001083621755,
+    "postprocess": 4.229600999969989
+  }
+}

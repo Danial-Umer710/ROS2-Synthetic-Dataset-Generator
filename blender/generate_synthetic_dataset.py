@@ -11,18 +11,17 @@ Pipeline (one run)
                    up-axis, re-centre each mesh so it stands on z = 0.
 2. Assembly      : find the tube holes in the TubeHolder by ray-casting a grid down
                    onto it (trying every face as "up"), keep the holes the tube body
-                   actually fits, drop one tube instance into each, and put the loose
-                   objects on the bench around the holder.
-3. Materials     : Principled BSDF glass (transmission 1.0, low roughness) for the
-                   transparent objects, matte plastic for the holder, a configurable
-                   bench plane and world background.
+                   actually fits, fill selected holes, place loose tubes and objects,
+                   and scatter unlabelled translucent Eppendorf distractors.
+3. Materials     : Principled BSDF glass and translucent distractors, matte plastic for
+                   the holder, a configurable bench plane and world background.
 4. Randomisation : per frame -> camera on a dome around the holder (distance, lens,
                    roll), 1-3 point lights sharing a bounded power budget (pose / colour
                    / softness), a procedurally textured bench (wood grain, brushed metal,
                    noise, tiles, fine grain - or your own images via --textures-dir),
                    a mottled or HDRI world, plastic colour, glass tint, camera exposure,
-                   which holes are filled, where the loose objects lie. Frames that still
-                   come out with > 10 % blown-out pixels are re-rendered 1 EV darker.
+                   loose tube poses, and distractor placement and appearance. Frames
+                   outside the exposure bounds are re-rendered.
 5. Label export  : every rendered object is projected through the camera, the convex
                    hull of the projected points is clipped to the frame and wrapped in
                    its minimum-area rotated rectangle. Written as
@@ -30,6 +29,7 @@ Pipeline (one run)
                    --label-mode visible (default) boxes only the part of an object the
                    camera can actually see (glass counts as see-through); amodal boxes
                    the whole object even when it is buried inside an opaque rack.
+6. Debug export  : --scene-json writes per-frame object poses and exact label membership.
 
 Output layout
 -------------
@@ -54,13 +54,14 @@ Quick smoke test (5 fast frames into a scratch folder), then eyeball the labels:
 
 Flags: --stl-dir --out-dir --num-images --start-index --resolution --samples
        --engine {cycles,eevee} --label-mode {visible,amodal} --seed
-       --textures-dir --hdri-dir --overwrite
+       --textures-dir --hdri-dir --overwrite --scene-json
 Frames are seeded individually, so re-running with the same --seed reproduces the same
 frames and a crashed run can be resumed (existing frames are skipped unless --overwrite).
 """
 
 import argparse
 import colorsys
+import json
 import math
 import random
 import sys
@@ -104,6 +105,15 @@ OBJECT_SPECS = [
     dict(file="eppendorf_tarto.stl", class_id=3, name="Eppendorf_Rack", role="loose",  material="glass"),
 ]
 
+DISTRACTOR_SPECS = [
+    dict(file="distractors/eppendorf_big.stl", name="Distractor_Eppendorf_Big"),
+    dict(file="distractors/eppendorf0p5ml.stl", name="Distractor_Eppendorf_0p5ml"),
+]
+DISTRACTOR_COUNT_RANGE = (2, 6)
+DISTRACTOR_LYING_PROB = 0.7
+DISTRACTOR_HINDER_PROB = 0.35
+DISTRACTOR_MAX_DIST = 0.20
+
 # STL carries no unit or axis metadata. These files are in millimetres with +Y as "up"
 # (CAD convention). The holder's up-face and the tube's up-end are verified geometrically
 # below, so a wrong guess here is corrected automatically for those two; loose objects
@@ -139,6 +149,9 @@ MAX_EXPOSURE_RETRIES = 3
 HOLE_FILL_PROB = 0.75             # chance each hole holds a tube (at least one is always filled)
 LOOSE_PRESENT_PROB = 0.85         # chance each loose object is in the scene at all
 LOOSE_MAX_DIST = 0.08             # metres beyond touching distance a loose object may lie
+LOOSE_TUBE_COUNT_RANGE = (1, 3)
+LOOSE_TUBE_LYING_PROB = 0.5
+LOOSE_TUBE_MAX_DIST = LOOSE_MAX_DIST
 HOLE_GRID_STEP = 0.001            # ray-cast grid resolution for hole detection (1 mm)
 HOLE_MIN_DEPTH = 0.004            # a depression must be >= 4 mm deep to count as a hole
 HOLE_FIT_TOLERANCE = 0.001        # tube body may exceed the hole radius by this much (1 mm)
@@ -186,6 +199,7 @@ def parse_args():
     p.add_argument("--textures-dir", default=None, help="optional folder of images used as bench textures")
     p.add_argument("--hdri-dir", default=None, help="optional folder of HDRIs/images used as world backgrounds")
     p.add_argument("--overwrite", action="store_true", help="re-render frames whose outputs already exist")
+    p.add_argument("--scene-json", action="store_true", help="write per-frame scene and label membership JSON")
     return p.parse_args(argv)
 
 
@@ -458,6 +472,14 @@ def orient_holder(holder, tube_co):
     return holes
 
 
+def longest_axis_rotation(dims):
+    longest = int(np.argmax(dims))
+    rotation = {0: Matrix.Rotation(math.radians(-90.0), 4, "Y"),
+                1: Matrix.Rotation(math.radians(90.0), 4, "X"),
+                2: Matrix.Identity(4)}[longest]
+    return longest, rotation
+
+
 def orient_tube(tube):
     """Stand the tube upright (longest bbox axis -> Z) with the right end down.
 
@@ -469,10 +491,7 @@ def orient_tube(tube):
     """
     lo, hi = mesh_bounds(tube)
     dims = hi - lo
-    longest = int(np.argmax(dims))
-    to_z = {0: Matrix.Rotation(math.radians(-90.0), 4, "Y"),
-            1: Matrix.Rotation(math.radians(90.0), 4, "X"),
-            2: Matrix.Identity(4)}[longest]
+    longest, to_z = longest_axis_rotation(dims)
     tube.data.transform(to_z)
     recenter_on_ground(tube)
     radius = 0.5 * max(dims[(longest + 1) % 3], dims[(longest + 2) % 3])
@@ -504,7 +523,7 @@ def orient_tube(tube):
 # =============================================================================== #
 
 def make_material(name, kind):
-    """'glass': clear Principled BSDF (transmission 1, low roughness). 'plastic': matte."""
+    """Create clear glass, translucent polymer, or matte plastic."""
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes["Principled BSDF"]
@@ -514,6 +533,11 @@ def make_material(name, kind):
         set_input(bsdf, ["IOR"], 1.5)
         set_input(bsdf, ["Transmission Weight", "Transmission"], 1.0)   # 4.x name, then 3.x
         set_input(bsdf, ["Specular IOR Level", "Specular"], 0.5)
+    elif kind == "translucent":
+        set_input(bsdf, ["Base Color"], (1.0, 1.0, 1.0, 1.0))
+        set_input(bsdf, ["Roughness"], 0.4)
+        set_input(bsdf, ["IOR"], 1.49)
+        set_input(bsdf, ["Transmission Weight", "Transmission"], 1.0)
     else:
         set_input(bsdf, ["Base Color"], (0.8, 0.1, 0.1, 1.0))
         set_input(bsdf, ["Roughness"], 0.55)
@@ -680,6 +704,41 @@ def build_scene(args, stl_dir):
     if holder is None or tube is None:
         raise RuntimeError("OBJECT_SPECS needs exactly one 'holder' and one 'tube' role")
 
+    S.distractor_groups = []
+    S.distractors = []
+    S.distractor_hulls = {}
+    for spec in DISTRACTOR_SPECS:
+        path = stl_dir / spec["file"]
+        if not path.exists():
+            raise FileNotFoundError(path)
+        obj = import_stl(path)
+        bounds = mesh_bounds(obj)
+        dims = (bounds[1] - bounds[0]) * 1000.0
+        log(f"imported distractor {spec['file']} bbox {dims[0]:.1f} x {dims[1]:.1f} x {dims[2]:.1f} mm")
+        _, rotation = longest_axis_rotation(dims)
+        obj.data.transform(rotation)
+        recenter_on_ground(obj)
+        obj.name = spec["name"]
+        obj["material_kind"] = "glass"
+        obj["distractor"] = True
+        mat, bsdf = make_material(f"{spec['name']}_mat", "translucent")
+        obj.data.materials.append(mat)
+        S.bsdf[obj.data.name] = bsdf
+        S.distractor_hulls[obj.data.name] = convex_hull_vertices(obj)
+        instances = [obj]
+        for i in range(1, 6):
+            inst = obj.copy()
+            inst.data = obj.data
+            inst.name = f"{spec['name']}.{i:03d}"
+            S.scene.collection.objects.link(inst)
+            instances.append(inst)
+        for inst in instances:
+            inst["material_kind"] = "glass"
+            inst["distractor"] = True
+            set_hidden(inst, True)
+        S.distractor_groups.append(instances)
+        S.distractors.extend(instances)
+
     # ---- orientation + assembly ---------------------------------------------------
     tube_co, S.tube_radius = orient_tube(tube)
     holes = orient_holder(holder, tube_co)
@@ -701,7 +760,19 @@ def build_scene(args, stl_dir):
     S.holder, S.loose = holder, loose
     S.holder_radius = footprint_radius(holder)
     S.loose_radius = {o.name: footprint_radius(o) for o in loose}
-    S.labelled = [holder] + S.tube_instances + loose
+    S.loose_tubes = []
+    for i in range(3):
+        inst = tube.copy()
+        inst.data = tube.data
+        inst.name = f"Glass_Tube.loose.{i:03d}"
+        inst["class_id"] = 1
+        inst["material_kind"] = "glass"
+        S.scene.collection.objects.link(inst)
+        set_hidden(inst, True)
+        S.loose_tubes.append(inst)
+    S.labelled = [holder] + S.tube_instances + loose + S.loose_tubes
+    if any(obj in S.labelled for obj in S.distractors):
+        raise AssertionError("Distractors must not be labelled")
     S.hulls = {o.data.name: convex_hull_vertices(o) for o in S.labelled}
     S.samples = {o.data.name: surface_samples(o, S.hulls[o.data.name], VISIBILITY_SAMPLES, args.seed)
                  for o in S.labelled}
@@ -913,13 +984,22 @@ def randomize_world(S, rng):
 
 def randomize_materials(S, rng):
     seen = set()
-    for obj in S.labelled:
+    for obj in S.labelled + S.distractors:
         key = obj.data.name
         if key in seen:
             continue
         seen.add(key)
         bsdf = S.bsdf[key]
-        if obj["material_kind"] == "plastic":
+        if obj.get("distractor"):
+            if rng.random() < 0.3:
+                tint = [rng.uniform(0.9, 1.0) for _ in range(3)]
+                roughness = rng.uniform(0.0, 0.1)
+            else:
+                tint = colorsys.hsv_to_rgb(rng.random(), rng.uniform(0.05, 0.3), rng.uniform(0.85, 1.0))
+                roughness = rng.uniform(0.25, 0.6)
+            set_input(bsdf, ["Base Color"], (*tint, 1.0))
+            set_input(bsdf, ["Roughness"], roughness)
+        elif obj["material_kind"] == "plastic":
             set_input(bsdf, ["Base Color"], (*random_plastic_color(rng), 1.0))
             set_input(bsdf, ["Roughness"], rng.uniform(0.35, 0.75))
         else:                                               # glass: clear or a faint tint
@@ -928,12 +1008,42 @@ def randomize_materials(S, rng):
             set_input(bsdf, ["Roughness"], rng.uniform(0.0, 0.1))
 
 
+def rest_pose(hull_pts_local, R):
+    rotated = np.asarray(hull_pts_local, dtype=np.float64) @ np.asarray(R, dtype=np.float64).T
+    lo, hi = rotated[:, :2].min(axis=0), rotated[:, :2].max(axis=0)
+    centre = (lo + hi) / 2.0
+    radius = np.hypot(rotated[:, 0] - centre[0], rotated[:, 1] - centre[1]).max()
+    return float(-rotated[:, 2].min()), float(radius), (float(centre[0]), float(centre[1]))
+
+
+def random_rest_pose(obj, hull, rng, lying_probability):
+    yaw = rng.uniform(0.0, 2.0 * math.pi)
+    if rng.random() < lying_probability:
+        spin = rng.uniform(0.0, 2.0 * math.pi)
+        rotation = (Matrix.Rotation(yaw, 3, "Z") @ Matrix.Rotation(math.pi / 2.0, 3, "X")
+                    @ Matrix.Rotation(spin, 3, "Z"))
+        pose = "lying"
+    else:
+        rotation = Matrix.Rotation(yaw, 3, "Z")
+        pose = "upright"
+    z_offset, radius, centre = rest_pose(hull, rotation)
+    obj.rotation_euler = rotation.to_euler()
+    return z_offset, radius, centre, pose
+
+
+def circles_clear(x, y, radius, placed, clearance):
+    return all(math.hypot(x - px, y - py) > radius + pr + clearance for px, py, pr in placed)
+
+
 def place_objects(S, rng):
-    """Yaw the holder, fill a random subset of its holes with tubes, scatter loose objects."""
+    """Yaw the holder, fill a random subset of its holes, and place loose objects and tubes."""
     yaw = rng.uniform(0.0, 2.0 * math.pi)
     S.holder.rotation_euler = (0.0, 0.0, yaw)
     S.holder.location = (0.0, 0.0, 0.0)
+    S.holder["pose"] = "upright"
     yaw_m = Matrix.Rotation(yaw, 4, "Z")
+    S.target_radii = {S.holder.name: S.holder_radius}
+    S.target_centres = {S.holder.name: (0.0, 0.0)}
 
     if S.tube_instances:
         chosen = [h for h in S.holes if rng.random() < HOLE_FILL_PROB] or [rng.choice(S.holes)]
@@ -947,7 +1057,10 @@ def place_objects(S, rng):
                             hole["floor_z"]))                            # rests on the hole floor
             inst.location = yaw_m @ local
             inst.rotation_euler = (0.0, 0.0, rng.uniform(0.0, 2.0 * math.pi))
+            inst["pose"] = "hole"
             set_hidden(inst, False)
+            S.target_radii[inst.name] = S.tube_radius
+            S.target_centres[inst.name] = (inst.location.x, inst.location.y)
 
     placed = [(0.0, 0.0, S.holder_radius)]
     for obj in S.loose:
@@ -965,7 +1078,38 @@ def place_objects(S, rng):
         placed.append((x, y, r))
         obj.location = (x, y, 0.0)
         obj.rotation_euler = (0.0, 0.0, rng.uniform(0.0, 2.0 * math.pi))
+        obj["pose"] = "upright"
         set_hidden(obj, False)
+        S.target_radii[obj.name] = r
+        S.target_centres[obj.name] = (x, y)
+
+    for obj in S.loose_tubes:
+        set_hidden(obj, True)
+    tube_count = rng.randint(*LOOSE_TUBE_COUNT_RANGE)
+    S.loose_tube_requested = tube_count
+    S.loose_tube_hidden = 0
+    for obj in rng.sample(S.loose_tubes, tube_count):
+        hull = S.hulls[obj.data.name]
+        z, radius, centre, pose = random_rest_pose(obj, hull, rng, LOOSE_TUBE_LYING_PROB)
+        placed_ok = False
+        for _ in range(60):
+            angle = rng.uniform(0.0, 2.0 * math.pi)
+            distance = rng.uniform(S.holder_radius + radius + 0.005,
+                                   S.holder_radius + radius + LOOSE_TUBE_MAX_DIST)
+            x, y = distance * math.cos(angle), distance * math.sin(angle)
+            if circles_clear(x, y, radius, placed, 0.003):
+                placed_ok = True
+                break
+        if not placed_ok:
+            S.loose_tube_hidden += 1
+            continue
+        obj.location = (x - centre[0], y - centre[1], z)
+        obj["pose"] = pose
+        set_hidden(obj, False)
+        placed.append((x, y, radius))
+        S.target_radii[obj.name] = radius
+        S.target_centres[obj.name] = (x, y)
+    S.placed = placed
 
 
 def place_camera(S, rng):
@@ -985,13 +1129,63 @@ def place_camera(S, rng):
     S.scene.view_settings.exposure = rng.uniform(*EXPOSURE_RANGE_EV)
 
 
+def place_distractors(S, rng):
+    for obj in S.distractors:
+        set_hidden(obj, True)
+    count = rng.randint(*DISTRACTOR_COUNT_RANGE)
+    S.distractor_requested = count
+    S.distractor_hidden = 0
+    available = [list(group) for group in S.distractor_groups]
+    for _ in range(count):
+        group = rng.choice([items for items in available if items])
+        obj = group.pop(rng.randrange(len(group)))
+        hull = S.distractor_hulls[obj.data.name]
+        z, radius, centre, pose = random_rest_pose(obj, hull, rng, DISTRACTOR_LYING_PROB)
+        placed_ok = False
+        if rng.random() < DISTRACTOR_HINDER_PROB:
+            targets = [target for target in S.labelled
+                       if not target.hide_render and target.name in S.target_radii]
+            if targets:
+                target = rng.choice(targets)
+                tx, ty = S.target_centres[target.name]
+                dx, dy = S.cam.location.x - tx, S.cam.location.y - ty
+                length = math.hypot(dx, dy)
+                if length < 1e-9:
+                    angle = rng.uniform(0.0, 2.0 * math.pi)
+                    dx, dy = math.cos(angle), math.sin(angle)
+                else:
+                    dx, dy = dx / length, dy / length
+                gap = rng.uniform(0.002, 0.03)
+                lateral = rng.uniform(-0.5, 0.5) * S.target_radii[target.name]
+                x = tx + dx * (S.target_radii[target.name] + radius + gap) - dy * lateral
+                y = ty + dy * (S.target_radii[target.name] + radius + gap) + dx * lateral
+                placed_ok = circles_clear(x, y, radius, S.placed, 0.003)
+        if not placed_ok:
+            for _ in range(60):
+                angle = rng.uniform(0.0, 2.0 * math.pi)
+                distance = rng.uniform(S.holder_radius + radius + 0.005,
+                                       S.holder_radius + radius + DISTRACTOR_MAX_DIST)
+                x, y = distance * math.cos(angle), distance * math.sin(angle)
+                if circles_clear(x, y, radius, S.placed, 0.003):
+                    placed_ok = True
+                    break
+        if not placed_ok:
+            S.distractor_hidden += 1
+            continue
+        obj.location = (x - centre[0], y - centre[1], z)
+        obj["pose"] = pose
+        set_hidden(obj, False)
+        S.placed.append((x, y, radius))
+
+
 def randomize_frame(S, rng):
     place_objects(S, rng)
+    place_camera(S, rng)
+    place_distractors(S, rng)
     randomize_materials(S, rng)
     randomize_bench(S, rng)
     randomize_world(S, rng)
     spawn_lights(S, rng)
-    place_camera(S, rng)
     bpy.context.view_layer.update()                         # make every matrix_world current
 
 
@@ -1145,14 +1339,15 @@ def obb_for_object(S, obj, depsgraph):
 def compute_labels(S):
     S.projector.refresh()
     depsgraph = bpy.context.evaluated_depsgraph_get()
-    lines = []
+    lines, labelled_names = [], []
     for obj in S.labelled:
         if obj.hide_render:
             continue
         corners = obb_for_object(S, obj, depsgraph)
         if corners is not None:
             lines.append(f"{int(obj['class_id'])} " + " ".join(f"{c:.6f}" for c in corners.ravel()))
-    return lines
+            labelled_names.append(obj.name)
+    return lines, labelled_names
 
 
 def frame_stats(path):
@@ -1212,6 +1407,9 @@ def main():
     images_dir, labels_dir = out_dir / "images" / "train", out_dir / "labels" / "train"
     images_dir.mkdir(parents=True, exist_ok=True)
     labels_dir.mkdir(parents=True, exist_ok=True)
+    scene_dir = out_dir / "scene" if args.scene_json else None
+    if scene_dir:
+        scene_dir.mkdir(parents=True, exist_ok=True)
     log(f"Blender {bpy.app.version_string} | STLs: {stl_dir} | output: {out_dir} | labels: {args.label_mode}")
 
     S = build_scene(args, stl_dir)
@@ -1235,9 +1433,33 @@ def main():
             continue
         rng = random.Random(args.seed * 1_000_003 + idx)   # per-frame seed -> reproducible & resumable
         randomize_frame(S, rng)
-        lines = compute_labels(S)
+        lines, labelled_names = compute_labels(S)
         render_with_exposure_guard(S, img_path, stem)
         lbl_path.write_text("\n".join(lines) + ("\n" if lines else ""))
+        if scene_dir:
+            labelled_names = set(labelled_names)
+            objects = []
+            for obj in S.scene.objects:
+                if obj.type != "MESH" or obj.hide_render:
+                    continue
+                class_id = None if obj.get("distractor") else obj.get("class_id")
+                objects.append({
+                    "name": obj.name,
+                    "class_id": int(class_id) if class_id is not None else None,
+                    "distractor": bool(obj.get("distractor", False)),
+                    "pose": obj.get("pose"),
+                    "location": [float(value) for value in obj.location],
+                    "labelled": obj.name in labelled_names,
+                })
+            (scene_dir / f"{stem}.json").write_text(json.dumps({
+                "objects": objects,
+                "placement": {
+                    "loose_tubes_requested": S.loose_tube_requested,
+                    "loose_tubes_hidden": S.loose_tube_hidden,
+                    "distractors_requested": S.distractor_requested,
+                    "distractors_hidden": S.distractor_hidden,
+                },
+            }, indent=2) + "\n")
         done += 1
         per = (time.time() - t0) / done
         eta = per * (last - idx - 1)
