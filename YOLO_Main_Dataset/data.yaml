@@ -1,0 +1,9 @@
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: Glass_Slide
+  1: Glass_Tube
+  2: Slide_Holder
+  3: Tube_Holder

@@ -1,3 +1,9 @@
+> **Branch Navigation (`legacy-v1`)**
+> - **`legacy-v1` (this branch):** v1 Blender HTTP Server pipeline, the 4,000-image `YOLO_Main_Dataset` (80/10/10 split), the 50-epoch `ur16e_main_run_4000-3` training run (`99.5% mAP@50`, `99.46% mAP@50-95`), and `predict-12` test predictions.
+> - **`main`:** Clean v2 CAD/STL procedural Blender pipeline (`blender/generate_synthetic_dataset.py`), 1,000-image 80/10/10 dataset, mathematical derivations, and held-out validation/test benchmarks.
+> - **`dev`:** Active development branch for upcoming Sim2Real improvements (loose glass tube placement, distractor/hindrance models, Docker reproducibility).
+> - **`blenderproc`:** Dedicated branch for the BlenderProc pipeline.
+
 # UR16e Sim2Real Labware Detection
 
 **Synthetic Data-Driven Object Detection for Laboratory Automation**
@@ -94,6 +100,25 @@ Each `.txt` file contains oriented bounding boxes:
 - **Device**: NVIDIA RTX GPU (CUDA)
 - **Optimizer**: AdamW (default)
 - **Augmentation**: Mosaic, MixUp, HSV jitter (YOLO defaults)
+
+
+### Training & Test Artifacts Included in This Branch
+
+- **Dataset (`YOLO_Main_Dataset/`):** 3,197 training, 400 validation, and 400 test `.jpg` images and `.txt` OBB labels (`0: Glass_Slide`, `1: Glass_Tube`, `2: Slide_Holder`, `3: Tube_Holder`).
+- **Trained Weights (`weights/` & `runs/obb/UR16e_Labware_Detection/ur16e_main_run_4000-3/weights/`):** `best.pt` and `last.pt`.
+- **50-Epoch Training & Validation Curves (`runs/obb/UR16e_Labware_Detection/ur16e_main_run_4000-3/`):**
+
+![Training and Validation Curves](runs/obb/UR16e_Labware_Detection/ur16e_main_run_4000-3/results.png)
+
+| Validation Batch 0 Predictions | Confusion Matrix (Normalized) |
+|---|---|
+| ![Validation Batch 0 Predictions](runs/obb/UR16e_Labware_Detection/ur16e_main_run_4000-3/val_batch0_pred.jpg) | ![Normalized Confusion Matrix](runs/obb/UR16e_Labware_Detection/ur16e_main_run_4000-3/confusion_matrix_normalized.png) |
+
+- **Test Set Predictions (`runs/obb/predict-12/`):** 225 annotated test prediction images:
+
+| Test Prediction Sample 1 | Test Prediction Sample 2 |
+|---|---|
+| ![Test Prediction 1](runs/obb/predict-12/multi_obb_0002.jpg) | ![Test Prediction 2](runs/obb/predict-12/multi_obb_0008.jpg) |
 
 ### Training Command
 ```bash
