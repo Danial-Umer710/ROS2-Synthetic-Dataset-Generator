@@ -2,6 +2,12 @@
 
 **A reproducible synthetic-data baseline for oriented detection of transparent and matte laboratory objects.**
 
+> **Branch Structure**
+> - **`main` (this branch):** Clean v2 CAD/STL procedural Blender baseline (`blender/generate_synthetic_dataset.py`), 4 STL labware meshes (`stl_models/`), 1,000-image 80/10/10 split (`dataset/`), trained YOLOv8n-OBB weights (`weights/`), and complete training/validation/test results and previews (`results/baseline/`).
+> - **`dev`:** Active development branch for upcoming Sim2Real improvements (loose glass tube placement next to holder, distractor/hindrance models, and Docker reproducibility).
+> - **`blenderproc`:** Dedicated branch for migrating the synthetic data generator to BlenderProc.
+> - **`legacy-v1`:** Archived v1 Blender HTTP Server pipeline, the 4,000-image `YOLO_Main_Dataset`, the 50-epoch `ur16e_main_run_4000-3` training run (`99.5% mAP@50`), and `predict-12` test predictions.
+
 This project connects STL geometry, procedural Blender rendering, geometry-derived oriented bounding-box (OBB) annotations, and YOLOv8n-OBB training. Its intended application is laboratory perception for a UR16e robot. The published experiment uses **1,000 synthetic images**, a fixed **800/100/100 train/validation/test split**, and a fresh **30-epoch** fine-tuning run from the original DOTA-pretrained `yolov8n-obb.pt`.
 
 | Published baseline | Result |
@@ -66,7 +72,7 @@ requirements.txt
 
 The **complete dataset**, not merely a sample, is published in [`dataset/`](dataset/). It is approximately **467 MiB** including labels and metadata; the largest image is below 1 MiB. Each trained checkpoint is approximately **6.2 MiB**. The publication fits GitHub's normal Git file and push limits, so no Git LFS pointers or separate Release download are required.
 
-Existing historical experiments and tracked legacy files are intentionally retained. They are **not** the experiment described here and may use different class mappings. In particular, the historical root-level `dataset.zip` is not this 1,000-image dataset. Use `dataset/`, `weights/`, and `results/baseline/` for the current baseline.
+Historical v1 datasets (`YOLO_Main_Dataset/`, `Blender Dataset/`), `.blend` scene files, and the 4,000-image training/test runs (`ur16e_main_run_4000-3`, `predict-12`) have been moved to the dedicated `legacy-v1` branch so that `main` contains only the clean v2 STL baseline.
 
 Only the current baseline's dataset, weights, STL files, and results have explicit `.gitignore` publication exceptions. Other local render runs, caches, and generated previews remain ignored. `.gitattributes` prevents newline conversion in frozen dataset/result artifacts so their byte-level checksums survive cross-platform Git checkouts.
 

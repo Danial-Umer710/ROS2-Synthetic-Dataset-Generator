@@ -127,6 +127,24 @@ assets/*.png
 assets/*.jpg
 
 /Data Sets/
+/datasets/
+/docs/
+/assets/
+/models/
+/*.blend
+/[0-9][0-9]*
+/Synthetic Data Pipeline*.md
+/blender/server.py
+/blender/render.py
+/blender/render_loop.py
+/scripts/clean_dataset.py
+/scripts/format_dataset.py
+/scripts/live_detect.py
+/scripts/predict.py
+/scripts/rebalance_dataset.py
+/scripts/test_yolo.py
+/scripts/train_model.py
+/scripts/verify_yolo.py
 /test_predictions_preview_*/
 !/dataset/
 /dataset/*
