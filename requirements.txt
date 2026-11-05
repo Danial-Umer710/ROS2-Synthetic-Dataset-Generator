@@ -6,3 +6,6 @@ opencv-python==5.0.0.93
 PyYAML==6.0.3
 matplotlib==3.11.1
 pillow==12.3.0
+# Real test set download (scripts/prep_real_test_set.py, Hugging Face Hub)
+datasets==5.1.0
+huggingface-hub==2.3.0

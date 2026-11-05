@@ -1,0 +1,13 @@
+# Real UR16e camera frames from ABC-iRobotics/LabWare_Items (instance_segmentation).
+# `path` intentionally omitted: Ultralytics resolves split dirs relative to this file.
+# This is an evaluation-only set: never train on it. Ultralytics requires
+# `train:`/`val:` keys, so unused ones alias the first exported split.
+test: images/test
+train: images/test  # unused alias (eval-only set)
+val: images/test  # unused alias (eval-only set)
+
+names:
+  0: Tube_Holder
+  1: Glass_Tube
+  2: Slide_Holder
+  3: Eppendorf_Rack

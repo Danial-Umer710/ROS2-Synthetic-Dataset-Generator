@@ -196,6 +196,25 @@ Ten fixed-seed test previews (`random.Random(42).sample(sorted(test_stems), 10)`
 
 The full 100-image prediction record is [`results/blenderproc/test/predictions.json`](results/blenderproc/test/predictions.json); SHA256 values of every published extension artifact are in [`results/blenderproc/checksums.sha256`](results/blenderproc/checksums.sha256).
 
+### Real-camera Sim2Real evaluation (`dataset/real_test/`)
+
+The repository's synthetic holdouts cannot show real-world transfer, so both checkpoints were also evaluated on **real UR16e camera frames**: the [`ABC-iRobotics/LabWare_Items`](https://huggingface.co/datasets/ABC-iRobotics/LabWare_Items) dataset (MIT license), `instance_segmentation` configuration, official **test** split — 282 images at 1280×800 with 1,592 annotated instances of the same four lab items. [`scripts/prep_real_test_set.py`](scripts/prep_real_test_set.py) converts each instance mask to a tight oriented box (`cv2.minAreaRect` over visible pixels — the same visibility convention as the synthetic labels), maps `TubeHolder/Tube/Slide_holder/eppendorf_tarto` to our class ids 0–3, and writes `dataset/real_test/` plus a provenance manifest. [`scripts/eval_real_test.py`](scripts/eval_real_test.py) runs the frozen checkpoints (imgsz 640, conf 0.001, NMS IoU 0.7); overlays for every frame are under `results/*/real_world_eval/predictions/`.
+
+| Model | Real P | Real R | Real mAP50 | Real mAP50–95 | Synthetic test mAP50–95 |
+|---|---:|---:|---:|---:|---:|
+| Baseline `weights/best.pt` | 54.02 | 46.44 | 49.38 | **37.28** | 88.29 |
+| Distractor `weights/blenderproc/best.pt` | 65.67 | 61.42 | 66.30 | **48.91** | 87.92 |
+
+Full numbers, per-class tables, and the report: [`results/baseline/real_world_eval/sim2real_report.json`](results/baseline/real_world_eval/sim2real_report.json) and [`SIM2REAL_REPORT.md`](results/baseline/real_world_eval/SIM2REAL_REPORT.md).
+
+The Sim2Real gap is large but structured: `Glass_Tube` accounts for most of it — the real `Tube` items are Falcon-style conical tubes lying loose (the baseline only ever saw thin glass tubes upright inside the holder), and its real `Glass_Tube` mAP50 is 4.8%. The distractor model's loose-tube training lifts this to 43.4% and gains 11.6 mAP50–95 points overall. Remaining error modes: the distractor model hallucinates `Glass_Tube` inside the real rack's empty holes (in synthetic scenes holes always contained tubes), the baseline labels real loose tubes `Slide_Holder`, and unannotated scene clutter counts as false positives. These real numbers are the reference baseline for the planned ControlNet/diffusion realism phase.
+
+```powershell
+# rebuild the real test set (HF cache reused), then evaluate a checkpoint on it
+python scripts/prep_real_test_set.py
+python scripts/eval_real_test.py --weights weights/best.pt --output results/baseline/real_world_eval_v2
+```
+
 ### Reproducing the extension
 
 ```powershell

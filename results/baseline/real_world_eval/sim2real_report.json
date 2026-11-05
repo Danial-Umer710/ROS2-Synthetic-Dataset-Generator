@@ -1,0 +1,126 @@
+{
+  "purpose": "Sim2Real baseline gap: synthetic-trained YOLOv8n-OBB evaluated on real UR16e camera frames",
+  "created": "2026-11-05",
+  "real_dataset": {
+    "source": "https://huggingface.co/datasets/ABC-iRobotics/LabWare_Items",
+    "config": "instance_segmentation",
+    "split": "test (official)",
+    "images": 282,
+    "instances": 1592,
+    "resolution": "1280x800",
+    "annotation": "minAreaRect over visible instance_mask pixels -> YOLOv8-OBB",
+    "converter": "scripts/prep_real_test_set.py"
+  },
+  "evaluation": {
+    "imgsz": 640,
+    "conf_cutoff": 0.001,
+    "nms_iou": 0.7,
+    "device": "RTX 4050 Laptop GPU"
+  },
+  "models": {
+    "baseline": {
+      "weights": "weights/best.pt",
+      "training_data": "dataset/ 800 clean synthetic images, 30 epochs",
+      "overall": {
+        "precision": 0.5402203910302504,
+        "recall": 0.4643952101624208,
+        "mAP50": 0.49382786464024203,
+        "mAP50-95": 0.3727685955121657
+      },
+      "per_class": {
+        "Tube_Holder": {
+          "class_id": 0,
+          "name": "Tube_Holder",
+          "instances": 282,
+          "precision": 0.8986701174959583,
+          "recall": 0.7553191489361702,
+          "mAP50": 0.8759228101507915,
+          "mAP50-95": 0.7095629796197214
+        },
+        "Glass_Tube": {
+          "class_id": 1,
+          "name": "Glass_Tube",
+          "instances": 468,
+          "precision": 0.2556599259578576,
+          "recall": 0.06837606837606838,
+          "mAP50": 0.04808674386409498,
+          "mAP50-95": 0.019964491827388804
+        },
+        "Slide_Holder": {
+          "class_id": 2,
+          "name": "Slide_Holder",
+          "instances": 560,
+          "precision": 0.4427268490550083,
+          "recall": 0.41964285714285715,
+          "mAP50": 0.4170626643237512,
+          "mAP50-95": 0.27202950982851587
+        },
+        "Eppendorf_Rack": {
+          "class_id": 3,
+          "name": "Eppendorf_Rack",
+          "instances": 282,
+          "precision": 0.5638246716121776,
+          "recall": 0.6142427661945874,
+          "mAP50": 0.6342392402223305,
+          "mAP50-95": 0.48951740077303657
+        }
+      }
+    },
+    "distractor": {
+      "weights": "weights/blenderproc/best.pt",
+      "training_data": "dataset_blenderproc/ 800 synthetic images with 2-6 unlabelled Eppendorf distractors + 1-3 loose Glass_Tubes per frame, 30 epochs",
+      "overall": {
+        "precision": 0.6566524407227121,
+        "recall": 0.6141828624352872,
+        "mAP50": 0.6630445913510624,
+        "mAP50-95": 0.4891054909401314
+      },
+      "per_class": {
+        "Tube_Holder": {
+          "class_id": 0,
+          "name": "Tube_Holder",
+          "instances": 282,
+          "precision": 0.9601222832916444,
+          "recall": 0.7588652482269503,
+          "mAP50": 0.937642765799111,
+          "mAP50-95": 0.749574463774305
+        },
+        "Glass_Tube": {
+          "class_id": 1,
+          "name": "Glass_Tube",
+          "instances": 468,
+          "precision": 0.38486572745370184,
+          "recall": 0.5726495726495726,
+          "mAP50": 0.43357830295825583,
+          "mAP50-95": 0.2926992968675425
+        },
+        "Slide_Holder": {
+          "class_id": 2,
+          "name": "Slide_Holder",
+          "instances": 560,
+          "precision": 0.6598388964819173,
+          "recall": 0.4018123735454767,
+          "mAP50": 0.5524775023113078,
+          "mAP50-95": 0.35206470513409577
+        },
+        "Eppendorf_Rack": {
+          "class_id": 3,
+          "name": "Eppendorf_Rack",
+          "instances": 282,
+          "precision": 0.621782855663585,
+          "recall": 0.723404255319149,
+          "mAP50": 0.7284797943355752,
+          "mAP50-95": 0.5620834979845822
+        }
+      }
+    }
+  },
+  "key_findings": [
+    "Large Sim2Real gap for the clean-baseline model: synthetic test mAP50-95 88.29% -> real 37.28%.",
+    "Distractor model halves the gap: real mAP50-95 48.91% (+11.6 pts), mAP50 66.30% (+16.9 pts).",
+    "Glass_Tube is the weakest class: real tubes are Falcon-style conical tubes lying loose, while the baseline only ever saw thin glass tubes upright inside TubeHolder holes. Distractor model's loose-tube training raised real Glass_Tube mAP50 4.8% -> 43.4%.",
+    "Known label-space caveat: real 'Tube' (conical centrifuge tube) differs physically from synthetic Tube.stl (thin glass test tube); real scenes also contain unannotated clutter (syringes, slides, caps) that counts as false positives.",
+    "Baseline model systematically misclassifies real loose tubes as Slide_Holder; distractor model hallucinates Glass_Tube detections inside empty TubeHolder holes (synthetic bias: holes always contained tubes)."
+  ],
+  "next_phase_baseline": "These are the reference numbers the ControlNet/SD realism pipeline must improve upon."
+}

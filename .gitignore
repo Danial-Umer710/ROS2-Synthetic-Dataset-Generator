@@ -160,12 +160,28 @@ assets/*.jpg
 !/dataset/labels/train/
 !/dataset/labels/val/
 !/dataset/labels/test/
-!/dataset/images/train/*.png
+!!/dataset/images/train/*.png
 !/dataset/images/val/*.png
 !/dataset/images/test/*.png
 !/dataset/labels/train/*.txt
 !/dataset/labels/val/*.txt
 !/dataset/labels/test/*.txt
+!/dataset/real_test/
+/dataset/real_test/*
+!/dataset/real_test/data.yaml
+!/dataset/real_test/real_test_manifest.json
+!/dataset/real_test/images/
+!/dataset/real_test/labels/
+!/dataset/real_test/preview/
+/dataset/real_test/images/*
+/dataset/real_test/labels/*
+/dataset/real_test/preview/*
+!/dataset/real_test/images/test/
+!/dataset/real_test/labels/test/
+!/dataset/real_test/preview/test/
+!/dataset/real_test/images/test/*.png
+!/dataset/real_test/labels/test/*.txt
+!/dataset/real_test/preview/test/*.png
 /stl_models/*
 !/stl_models/TubeHolder.stl
 !/stl_models/Tube.stl
@@ -184,6 +200,7 @@ assets/*.jpg
 !/results/baseline/**/*.json
 !/results/baseline/**/*.yaml
 !/results/baseline/**/*.csv
+!/results/baseline/**/*.md
 
 !/dataset_blenderproc/
 /dataset_blenderproc/*
