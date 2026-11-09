@@ -18,7 +18,7 @@ This project connects STL geometry, procedural Blender rendering, geometry-deriv
 
 Both models are YOLOv8n-OBB at 640 × 640, trained for 30 epochs on an NVIDIA GeForce RTX 4050 Laptop GPU (6 GB). The distractor model keeps the baseline's accuracy on the clean scenes while recovering **9.4 mAP50–95 points** on scenes with distractors and loose tubes, where the baseline model misses lying tubes and labels distractors as `Slide_Holder` (details [below](#results-compared-to-the-baseline)).
 
-> **Scope:** these are image-disjoint, held-out **synthetic** results, not real-camera or robot-grasp results. No real-world camera evaluation has been performed. An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
+> **Scope:** these are image-disjoint, held-out **synthetic** results, not real-camera or robot-grasp results. Real UR16e camera results (37.28% / 48.91% mAP50–95 for the two models) are in [Real-camera Sim2Real evaluation](#real-camera-sim2real-evaluation-datasetreal_test). An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
 
 | Baseline test prediction (`main` model, clean scene) | Distractor-model test prediction (this branch; unboxed Eppendorf distractors, boxed loose tube) |
 |---|---|
@@ -214,6 +214,17 @@ The Sim2Real gap is large but structured: `Glass_Tube` accounts for most of it �
 python scripts/prep_real_test_set.py
 python scripts/eval_real_test.py --weights weights/best.pt --output results/baseline/real_world_eval_v2
 ```
+
+### Generator fixes for the real-camera failure modes
+
+The real-camera evaluation exposed two scene-composition gaps, fixed in the generator after `dataset_blenderproc/` was frozen (that dataset and its model were made with the previous generator and `Tube.stl`; re-running the current generator produces different scenes):
+
+1. **Empty rack holes ("ghost tubes").** Each of the four tube holes is now filled independently with probability `HOLE_FILL_PROB = 0.5` (previously 0.75 with at least one tube forced), so about half the holes are empty and some racks are completely empty — the distractor model had learnt that a hole always contains a tube.
+2. **Falcon tube geometry.** The real tubes are unskirted 50 ml conical tubes with screw caps; `Tube.stl` has a skirt that hides its conical bottom. [`scripts/generate_falcon_tube.py`](scripts/generate_falcon_tube.py) revolves a radial profile into a watertight mesh, `stl_models/Falcon_Tube.stl` (pointed conical tip over 21 mm, 29 mm body, 34 mm ribbed cap, 114.5 mm overall), which replaces `Tube.stl` as class `1: Glass_Tube`. The cap (faces above the radius step) gets its own opaque plastic material whose colour varies per tube instance (Object Info → Random → constant ColorRamp, palette redrawn per frame); visibility ray-casts treat cap faces as opaque and the clear body as see-through. A pointed tube cannot stand on its tip, so loose tubes lie on their side (80%) or stand inverted on the cap (20%). Because cap and tip have different radii, a lying tube is tilted to its physical rest angle $\varphi^* = \arg\min_\varphi \big(z_{\text{com}}(\varphi) - \min_i z_i(\varphi)\big)$ over the hull vertices $z_i$ and the shell centroid (also applied to lying distractors). The OBB is the minimum-area rectangle of the projected visible surface points, so cap and tip are enclosed automatically.
+
+A 16-frame QA render with ground-truth overlays ([`results/geometry_test_grid.jpg`](results/geometry_test_grid.jpg), `scripts/make_contact_sheet.py`) has 46.9% empty holes, 3 fully empty racks, every loose tube labelled and no distractor labelled.
+
+![Geometry QA contact sheet](results/geometry_test_grid.jpg)
 
 ### Reproducing the extension
 

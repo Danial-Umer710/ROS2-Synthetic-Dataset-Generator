@@ -187,10 +187,12 @@ assets/*.jpg
 !/stl_models/Tube.stl
 !/stl_models/Slide_holder.stl
 !/stl_models/eppendorf_tarto.stl
+!/stl_models/Falcon_Tube.stl
 /weights/*
 !/weights/best.pt
 !/weights/last.pt
 /results/*
+!/results/geometry_test_grid.jpg
 !/results/baseline/
 /results/baseline/**
 !/results/baseline/**/

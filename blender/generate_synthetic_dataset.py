@@ -93,14 +93,16 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent if "__file__" in globals()
 #   pre_rotate_deg : optional extra rotation (X, Y, Z degrees) applied after the global
 #                    up-axis fix, for files exported with an unusual orientation.
 # Geometry of the shipped files (measured): TubeHolder.stl is a 3-way rack (4 x 30 mm,
-# 12 x 17 mm and 32 x 12 mm holes on different faces), Tube.stl is a capped 50 ml conical
-# tube (30 mm body, 35 mm cap), eppendorf_tarto.stl is a 96-well PCR rack lying flat and
+# 12 x 17 mm and 32 x 12 mm holes on different faces), Falcon_Tube.stl is a procedural
+# unskirted 50 ml conical tube (29 mm body, pointed conical tip, 34 mm ribbed screw cap;
+# scripts/generate_falcon_tube.py) that replaces the skirted Tube.stl so the synthetic tubes
+# match the real ones, eppendorf_tarto.stl is a 96-well PCR rack lying flat and
 # Slide_holder.stl is a small stand. The last two are rack-shaped, so they cannot sit in a
 # tube hole and are placed on the bench; they render as glass as requested - switch
 # material to 'plastic' if the real parts are opaque.
 OBJECT_SPECS = [
     dict(file="TubeHolder.stl",      class_id=0, name="Tube_Holder",    role="holder", material="plastic"),
-    dict(file="Tube.stl",            class_id=1, name="Glass_Tube",     role="tube",   material="glass"),
+    dict(file="Falcon_Tube.stl",     class_id=1, name="Glass_Tube",     role="tube",   material="glass"),
     dict(file="Slide_holder.stl",    class_id=2, name="Slide_Holder",   role="loose",  material="glass"),
     dict(file="eppendorf_tarto.stl", class_id=3, name="Eppendorf_Rack", role="loose",  material="glass"),
 ]
@@ -146,11 +148,22 @@ MAX_CLIPPED_FRACTION = 0.10
 MAX_EXPOSURE_RETRIES = 3
 
 # Scene composition
-HOLE_FILL_PROB = 0.75             # chance each hole holds a tube (at least one is always filled)
+# Each hole is filled independently, so on average half the holes are empty and some racks
+# are completely empty, as in the real captures (a model trained on always-full racks
+# hallucinates tubes in empty holes).
+HOLE_FILL_PROB = 0.5
 LOOSE_PRESENT_PROB = 0.85         # chance each loose object is in the scene at all
 LOOSE_MAX_DIST = 0.08             # metres beyond touching distance a loose object may lie
 LOOSE_TUBE_COUNT_RANGE = (1, 3)
-LOOSE_TUBE_LYING_PROB = 0.5
+# A pointed tube cannot stand on its tip: loose tubes lie on their side or stand upside
+# down on the flat cap.
+LOOSE_TUBE_LYING_PROB = 0.8
+LYING_TILT_RANGE_DEG = 30.0       # search range for the physical rest tilt of lying objects
+CAP_PALETTE = [                   # screw-cap colours (linear RGB): blue, red, orange, white, yellow, green, purple, black
+    (0.02, 0.18, 0.75), (0.75, 0.03, 0.03), (0.90, 0.30, 0.02), (0.85, 0.85, 0.85),
+    (0.90, 0.70, 0.03), (0.04, 0.45, 0.10), (0.30, 0.05, 0.55), (0.03, 0.03, 0.03),
+]
+CAP_MIN_STEP = 0.001              # cap = everything above where the radius steps out >= 1 mm
 LOOSE_TUBE_MAX_DIST = LOOSE_MAX_DIST
 HOLE_GRID_STEP = 0.001            # ray-cast grid resolution for hole detection (1 mm)
 HOLE_MIN_DEPTH = 0.004            # a depression must be >= 4 mm deep to count as a hole
@@ -327,6 +340,16 @@ def convex_hull_vertices(obj):
         pts = mesh_arrays(obj)[0]
     bm.free()
     return pts
+
+
+def shell_centroid(obj):
+    """Area-weighted centroid of the surface (local coords): centre of mass of a thin shell."""
+    me = obj.data
+    centers = np.empty(len(me.polygons) * 3, dtype=np.float64)
+    areas = np.empty(len(me.polygons), dtype=np.float64)
+    me.polygons.foreach_get("center", centers)
+    me.polygons.foreach_get("area", areas)
+    return (centers.reshape(-1, 3) * areas[:, None]).sum(axis=0) / max(areas.sum(), 1e-12)
 
 
 def surface_samples(obj, hull, n, seed):
@@ -516,6 +539,42 @@ def orient_tube(tube):
     log(f"tube: bbox radius {radius * 1e3:.1f} mm, height {height * 1e3:.1f} mm, "
         f"end radii bottom {min(r_bottom, r_top) * 1e3:.1f} / top {max(r_bottom, r_top) * 1e3:.1f} mm")
     return co, radius
+
+
+def add_cap_material(S, tube):
+    """Give the screw cap (everything above the point where the upright tube's radius steps
+    out by >= CAP_MIN_STEP) its own opaque plastic material in slot 1. The colour comes from
+    a constant ColorRamp driven by Object Info > Random, so every linked tube instance gets
+    its own cap colour while sharing one mesh; the ramp's colours are re-drawn per frame."""
+    co, _ = mesh_arrays(tube)
+    height = co[:, 2].max()
+    radial = np.hypot(co[:, 0], co[:, 1])
+    mid = (co[:, 2] > 0.3 * height) & (co[:, 2] < 0.7 * height)
+    body_r = float(np.median(radial[mid])) if mid.any() else 0.0
+    wide = radial > body_r + CAP_MIN_STEP
+    if not mid.any() or not wide.any():
+        log("tube: no cap step found - the whole tube keeps the glass material")
+        S.cap_ramp = None
+        return
+    cap_z = float(co[wide, 2].min())
+    mat, bsdf = make_material("Glass_Tube_cap_mat", "plastic")
+    nt = mat.node_tree
+    info = nt.nodes.new("ShaderNodeObjectInfo")
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.interpolation = "CONSTANT"
+    for pos in (0.25, 0.5, 0.75):
+        ramp.color_ramp.elements.new(pos)
+    nt.links.new(info.outputs["Random"], ramp.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
+    tube.data.materials.append(mat)
+    cap_faces = 0
+    for p in tube.data.polygons:
+        if p.center.z >= cap_z - 1e-5:
+            p.material_index = 1
+            cap_faces += 1
+    S.cap_ramp, S.cap_bsdf = ramp, bsdf
+    log(f"tube: cap from z = {cap_z * 1e3:.1f} mm (body r {body_r * 1e3:.1f} mm), "
+        f"{cap_faces} faces -> opaque cap material")
 
 
 # =============================================================================== #
@@ -741,6 +800,7 @@ def build_scene(args, stl_dir):
 
     # ---- orientation + assembly ---------------------------------------------------
     tube_co, S.tube_radius = orient_tube(tube)
+    add_cap_material(S, tube)
     holes = orient_holder(holder, tube_co)
     for obj in loose:
         recenter_on_ground(obj)
@@ -774,6 +834,7 @@ def build_scene(args, stl_dir):
     if any(obj in S.labelled for obj in S.distractors):
         raise AssertionError("Distractors must not be labelled")
     S.hulls = {o.data.name: convex_hull_vertices(o) for o in S.labelled}
+    S.coms = {o.data.name: shell_centroid(o) for o in S.labelled + S.distractors}
     S.samples = {o.data.name: surface_samples(o, S.hulls[o.data.name], VISIBILITY_SAMPLES, args.seed)
                  for o in S.labelled}
 
@@ -1006,6 +1067,29 @@ def randomize_materials(S, rng):
             tint = [rng.uniform(0.9, 1.0) for _ in range(3)] if rng.random() < 0.3 else [1.0, 1.0, 1.0]
             set_input(bsdf, ["Base Color"], (*tint, 1.0))
             set_input(bsdf, ["Roughness"], rng.uniform(0.0, 0.1))
+    if S.cap_ramp is not None:
+        colors = rng.sample(CAP_PALETTE, len(S.cap_ramp.color_ramp.elements))
+        for el, col in zip(S.cap_ramp.color_ramp.elements, colors):
+            el.color = (*(min(1.0, c * rng.uniform(0.85, 1.1)) for c in col), 1.0)
+        set_input(S.cap_bsdf, ["Roughness"], rng.uniform(0.3, 0.6))
+
+
+def lying_tilt(hull, com, spin):
+    """Tilt about the horizontal axis at which an object lying on its side really rests.
+
+    A body whose ends differ in width (a tube with a wide cap and a pointed tip) does not lie
+    with its axis horizontal: it settles where its centre of mass is lowest. For each tilt
+    phi the lowest hull point touches the bench, so the COM height is
+    h(phi) = z_com(phi) - min_i z_i(phi); the stable resting tilt minimises h.
+    """
+    spin_m = Matrix.Rotation(spin, 3, "Z")
+    best_phi, best_h = 0.0, None
+    for phi in np.radians(np.arange(-LYING_TILT_RANGE_DEG, LYING_TILT_RANGE_DEG + 1e-9, 0.25)):
+        R = np.array(Matrix.Rotation(math.pi / 2.0 + phi, 3, "X") @ spin_m, dtype=np.float64)
+        h = (R @ com)[2] - (hull @ R.T)[:, 2].min()
+        if best_h is None or h < best_h - 1e-9:
+            best_phi, best_h = float(phi), h
+    return best_phi
 
 
 def rest_pose(hull_pts_local, R):
@@ -1016,13 +1100,19 @@ def rest_pose(hull_pts_local, R):
     return float(-rotated[:, 2].min()), float(radius), (float(centre[0]), float(centre[1]))
 
 
-def random_rest_pose(obj, hull, rng, lying_probability):
+def random_rest_pose(obj, hull, rng, lying_probability, com=None, stand_inverted=False):
+    """Lying (physically tilted when `com` is given) or standing; `stand_inverted` stands the
+    object upside down, for tubes that can only stand on their flat cap."""
     yaw = rng.uniform(0.0, 2.0 * math.pi)
     if rng.random() < lying_probability:
         spin = rng.uniform(0.0, 2.0 * math.pi)
-        rotation = (Matrix.Rotation(yaw, 3, "Z") @ Matrix.Rotation(math.pi / 2.0, 3, "X")
+        tilt = lying_tilt(hull, com, spin) if com is not None else 0.0
+        rotation = (Matrix.Rotation(yaw, 3, "Z") @ Matrix.Rotation(math.pi / 2.0 + tilt, 3, "X")
                     @ Matrix.Rotation(spin, 3, "Z"))
         pose = "lying"
+    elif stand_inverted:
+        rotation = Matrix.Rotation(yaw, 3, "Z") @ Matrix.Rotation(math.pi, 3, "X")
+        pose = "inverted"
     else:
         rotation = Matrix.Rotation(yaw, 3, "Z")
         pose = "upright"
@@ -1046,7 +1136,8 @@ def place_objects(S, rng):
     S.target_centres = {S.holder.name: (0.0, 0.0)}
 
     if S.tube_instances:
-        chosen = [h for h in S.holes if rng.random() < HOLE_FILL_PROB] or [rng.choice(S.holes)]
+        chosen = [h for h in S.holes if rng.random() < HOLE_FILL_PROB]   # may be empty: empty rack
+        S.holes_filled = len(chosen)
         for inst in S.tube_instances:
             set_hidden(inst, True)
         for inst, hole in zip(S.tube_instances, chosen):
@@ -1090,7 +1181,8 @@ def place_objects(S, rng):
     S.loose_tube_hidden = 0
     for obj in rng.sample(S.loose_tubes, tube_count):
         hull = S.hulls[obj.data.name]
-        z, radius, centre, pose = random_rest_pose(obj, hull, rng, LOOSE_TUBE_LYING_PROB)
+        z, radius, centre, pose = random_rest_pose(obj, hull, rng, LOOSE_TUBE_LYING_PROB,
+                                                   com=S.coms[obj.data.name], stand_inverted=True)
         placed_ok = False
         for _ in range(60):
             angle = rng.uniform(0.0, 2.0 * math.pi)
@@ -1140,7 +1232,8 @@ def place_distractors(S, rng):
         group = rng.choice([items for items in available if items])
         obj = group.pop(rng.randrange(len(group)))
         hull = S.distractor_hulls[obj.data.name]
-        z, radius, centre, pose = random_rest_pose(obj, hull, rng, DISTRACTOR_LYING_PROB)
+        z, radius, centre, pose = random_rest_pose(obj, hull, rng, DISTRACTOR_LYING_PROB,
+                                                   com=S.coms[obj.data.name])
         placed_ok = False
         if rng.random() < DISTRACTOR_HINDER_PROB:
             targets = [target for target in S.labelled
@@ -1228,8 +1321,9 @@ class Projector:
 
 def visible_points(S, obj, pts_world, depsgraph):
     """Keep the points of `obj` whose line of sight to the camera is not blocked by an opaque
-    object. Glass objects are stepped through (up to 8 surfaces); hitting `obj` itself counts
-    as visible because that ray still lands inside the object's visible silhouette."""
+    object. Glass objects are stepped through (up to 8 surfaces) except their opaque faces
+    (material slot > 0, e.g. a tube's plastic cap); hitting `obj` itself counts as visible
+    because that ray still lands inside the object's visible silhouette."""
     cam_pos = S.cam.matrix_world.translation
     keep = []
     for p in pts_world:
@@ -1240,11 +1334,12 @@ def visible_points(S, obj, pts_world, depsgraph):
         direction.normalize()
         ok = False
         for _ in range(8):
-            hit, loc, _n, _i, hit_obj, _m = S.scene.ray_cast(depsgraph, origin, direction, distance=remaining)
+            hit, loc, _n, face, hit_obj, _m = S.scene.ray_cast(depsgraph, origin, direction, distance=remaining)
             if not hit or hit_obj.name == obj.name:
                 ok = True
                 break
-            if hit_obj.get("material_kind") == "glass":    # see-through: continue behind it
+            if (hit_obj.get("material_kind") == "glass"    # see-through: continue behind it
+                    and hit_obj.data.polygons[face].material_index == 0):
                 step = (loc - origin).length + 1e-4
                 origin, remaining = loc + direction * 1e-4, remaining - step
                 continue
@@ -1454,6 +1549,8 @@ def main():
             (scene_dir / f"{stem}.json").write_text(json.dumps({
                 "objects": objects,
                 "placement": {
+                    "holes_total": len(S.holes),
+                    "holes_filled": getattr(S, "holes_filled", 0),
                     "loose_tubes_requested": S.loose_tube_requested,
                     "loose_tubes_hidden": S.loose_tube_hidden,
                     "distractors_requested": S.distractor_requested,
