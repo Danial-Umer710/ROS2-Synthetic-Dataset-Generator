@@ -4,6 +4,7 @@
 
 > **Branch Structure**
 > - **`blenderproc` (this branch):** The `main` baseline **plus** the distractor/hindrance and loose-tube extension described in [Distractor and loose-tube extension](#distractor-and-loose-tube-extension-this-branch): two unlabelled translucent Eppendorf distractor meshes (`stl_models/distractors/`), a second 1,000-image 80/10/10 dataset (`dataset_blenderproc/`), a second trained model (`weights/blenderproc/`), and its results and cross-evaluation against the baseline (`results/blenderproc/`).
+> - **`controlnet`:** Built on this branch — diffusion realism stage (EXR geometry passes → SD1.5 Multi-ControlNet img2img stylization with label-safe fg-keep compositing); best real score **56.56% mAP50–95**.
 > - **`main`:** Clean v2 CAD/STL procedural Blender baseline (`blender/generate_synthetic_dataset.py`), 4 STL labware meshes (`stl_models/`), 1,000-image 80/10/10 split (`dataset/`), trained YOLOv8n-OBB weights (`weights/`), and complete training/validation/test results and previews (`results/baseline/`).
 > - **`dev`:** Active development branch for upcoming Sim2Real improvements (Docker reproducibility, further scene variation).
 > - **`legacy-v1`:** Archived v1 Blender HTTP Server pipeline, the 4,000-image `YOLO_Main_Dataset`, the 50-epoch `ur16e_main_run_4000-3` training run (`99.5% mAP@50`), and `predict-12` test predictions.
