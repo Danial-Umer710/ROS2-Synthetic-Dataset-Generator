@@ -1,26 +1,45 @@
 # UR16e Sim2Real Labware Detection
 
-**A reproducible synthetic-data baseline for oriented detection of transparent and matte laboratory objects.**
+**Synthetic-to-real oriented detection of laboratory objects for a UR16e robot: procedural Blender renders → exact geometry-derived OBB labels → YOLOv8n-OBB → real-camera evaluation.**
 
-> **Branch Structure**
-> - **`main` (this branch):** Clean v2 CAD/STL procedural Blender baseline (`blender/generate_synthetic_dataset.py`), 4 STL labware meshes (`stl_models/`), 1,000-image 80/10/10 split (`dataset/`), trained YOLOv8n-OBB weights (`weights/`), and complete training/validation/test results and previews (`results/baseline/`).
-> - **`dev`:** Active development branch for upcoming Sim2Real improvements (loose glass tube placement next to holder, distractor/hindrance models, and Docker reproducibility).
-> - **`blenderproc`:** Dedicated branch for migrating the synthetic data generator to BlenderProc.
-> - **`legacy-v1`:** Archived v1 Blender HTTP Server pipeline, the 4,000-image `YOLO_Main_Dataset`, the 50-epoch `ur16e_main_run_4000-3` training run (`99.5% mAP@50`), and `predict-12` test predictions.
+This repository develops Sim2Real labware detection as a series of stages, one per branch. **`main` (this branch) is the clean v2 baseline** and the repository's landing page — it contains the shared pipeline (generator, label maths, split tool, training/evaluation scripts), the clean 1,000-image dataset, the baseline model, and the full baseline documentation below. Every later branch builds one stage on top and has **its own README** describing that stage.
 
-This project connects STL geometry, procedural Blender rendering, geometry-derived oriented bounding-box (OBB) annotations, and YOLOv8n-OBB training. Its intended application is laboratory perception for a UR16e robot. The published experiment uses **1,000 synthetic images**, a fixed **800/100/100 train/validation/test split**, and a fresh **30-epoch** fine-tuning run from the original DOTA-pretrained `yolov8n-obb.pt`.
+## Branch guide — where is what?
 
-| Published baseline | Result |
+| Branch | Stage | What it adds on top of the previous | Headline result |
+|---|---|---|---|
+| **`main`** (this branch) | Clean synthetic baseline | Cycles renders of 4 STL lab items, visible-silhouette min-area OBB labels, frozen 800/100/100 dataset (`dataset/`), baseline model (`weights/`), full results (`results/baseline/`) | 88.29% synthetic test mAP50–95; **37.28% real mAP50–95** |
+| **`blenderproc`** | Scene composition | Unlabelled look-alike **distractors** (pure negatives), **loose tubes** on the bench, procedural **Falcon tube** mesh, ~50% empty rack holes, and the **282-frame real UR16e test set** (`dataset/real_test/`) | **48.91% real mAP50–95** (+11.6 pts) |
+| **`controlnet`** | Appearance realism | Depth/Normal/Object-Index **EXR passes** → SD1.5 Realistic Vision + Multi-ControlNet **img2img stylization** with label-safe foreground compositing | **56.56% real mAP50–95** (+7.7 pts) |
+| **`dev`** | Scratch / experiments | `DEV_ROADMAP.md` Sim2Real task list + an experimental full-1,000-image training run (in-sample, no holdout) | development only |
+| **`legacy-v1`** | Archive | v1 Blender HTTP pipeline, 4,000-image `YOLO_Main_Dataset`, `ur16e_main_run_4000-3` (99.5% mAP50), `predict-12` | historical |
+
+### How the stages fit together
+
+- **Labels are computed once, in Blender.** Every stage reuses the same label pipeline — minimum-area rectangles over the *visible* projected silhouette — so a model trained at any stage consumes the same label convention.
+- **`blenderproc` changes *what* is in the scene.** Distractors that look like labware but must never be boxed, tubes lying loose next to the holder, a Falcon-style conical tube matching the real objects, and holes left empty ~50% of the time. It also introduces the shared **real-camera yardstick**: 282 UR16e frames from `ABC-iRobotics/LabWare_Items`.
+- **`controlnet` changes *how* the scene looks.** A frozen diffusion model repaints each render in a photographic style, conditioned on the render's own depth and per-object index map; original pixels are blended back inside the labelled-object masks so the OBB labels stay valid.
+- **The real-world scoreboard** (mAP50–95 on the real test set): **37.28 → 48.91 → 56.56** across the three stages.
+
+### Published baseline summary
+
+| Metric | Value |
 |---|---:|
 | Held-out validation mAP50–95 | **89.79%** |
 | Held-out test mAP50–95 | **88.29%** |
 | Held-out test mAP50 | **97.16%** |
-| Image size | 640 × 640 RGB |
-| Training hardware | NVIDIA GeForce RTX 4050 Laptop GPU, 6 GB |
+| Classes | `0: Tube_Holder`, `1: Glass_Tube`, `2: Slide_Holder`, `3: Eppendorf_Rack` |
+| Image size / model | 640 × 640 RGB / YOLOv8n-OBB, 30 epochs, RTX 4050 |
 
-> **Scope:** these are image-disjoint, held-out **synthetic** results, not real-camera or robot-grasp results. No real-world camera evaluation has been performed. An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
+> **Scope:** baseline scores are image-disjoint, held-out **synthetic** results. Real-camera transfer is measured on `blenderproc` and later branches. An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
 
 ![Example held-out test prediction with oriented boxes and confidence scores](results/baseline/test/previews/000228.png)
+
+### Navigating the repository
+
+- **Read this branch's stage** → continue below (the complete baseline documentation).
+- **Check out another stage** → `git clone -b <branch> https://github.com/Danial-Umer710/ROS2-Synthetic-Dataset-Generator.git` or `git switch <branch>`; each branch README has its own results tables and reproduction commands.
+- **Reproduce** → the [Reproducibility](#reproducibility) section below; later branches add their own steps (diffusion install on `controlnet`, real-test prep on `blenderproc`).
 
 ## Contents
 
@@ -34,6 +53,10 @@ This project connects STL geometry, procedural Blender rendering, geometry-deriv
 - [Reproducibility](#reproducibility)
 - [Limitations and next experiments](#limitations-and-next-experiments)
 - [Provenance and licensing](#provenance-and-licensing)
+
+---
+
+*The remainder of this README documents the `main` baseline stage in full; the same documentation, plus each stage's additions, appears in the corresponding branch READMEs.*
 
 ## Repository and published assets
 
