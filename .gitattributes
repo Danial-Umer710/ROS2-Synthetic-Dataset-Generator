@@ -8,3 +8,5 @@ requirements.txt text eol=lf
 /dataset_blenderproc/** -text
 /stl_models/distractors/*.stl -text
 /weights/blenderproc/*.pt -text
+/weights/controlnet/*.pt -text
+/dataset_controlnet/** -text
