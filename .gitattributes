@@ -9,4 +9,6 @@ requirements.txt text eol=lf
 /stl_models/distractors/*.stl -text
 /weights/blenderproc/*.pt -text
 /weights/controlnet/*.pt -text
+/weights/controlnet_fg05/*.pt -text
 /dataset_controlnet/** -text
+/dataset_controlnet_fg05/** -text
