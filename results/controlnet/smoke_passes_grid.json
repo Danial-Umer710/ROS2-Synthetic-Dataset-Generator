@@ -1,0 +1,430 @@
+{
+  "frames": 8,
+  "all_index_values_integer": true,
+  "unknown_index_ids": 0,
+  "min_mask_in_obb_fraction": 0.9927,
+  "frames_report": [
+    {
+      "frame": "000000",
+      "depth_m_min": 0.7404,
+      "depth_m_max": 1.1486,
+      "background_fraction": 0.0,
+      "index_ids": [
+        0,
+        1,
+        2,
+        3,
+        6,
+        8,
+        9,
+        14,
+        15,
+        16,
+        17
+      ],
+      "index_max_non_integer": 0.0,
+      "index_ids_unknown": [],
+      "labelled_objects_in_index": 6,
+      "worst_mask_in_obb_fraction": 1.0,
+      "per_object_mask_in_obb": [
+        [
+          "Tube_Holder",
+          1.0
+        ],
+        [
+          "Glass_Tube",
+          1.0
+        ],
+        [
+          "Glass_Tube.001",
+          1.0
+        ],
+        [
+          "Slide_Holder",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.000",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.001",
+          1.0
+        ]
+      ]
+    },
+    {
+      "frame": "000001",
+      "depth_m_min": 0.295,
+      "depth_m_max": 2.824,
+      "background_fraction": 0.3272,
+      "index_ids": [
+        0,
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        13,
+        18,
+        20
+      ],
+      "index_max_non_integer": 0.0,
+      "index_ids_unknown": [],
+      "labelled_objects_in_index": 6,
+      "worst_mask_in_obb_fraction": 1.0,
+      "per_object_mask_in_obb": [
+        [
+          "Tube_Holder",
+          1.0
+        ],
+        [
+          "Glass_Tube",
+          1.0
+        ],
+        [
+          "Glass_Tube.001",
+          1.0
+        ],
+        [
+          "Slide_Holder",
+          1.0
+        ],
+        [
+          "Eppendorf_Rack",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.000",
+          1.0
+        ]
+      ]
+    },
+    {
+      "frame": "000002",
+      "depth_m_min": 0.4291,
+      "depth_m_max": 0.7748,
+      "background_fraction": 0.0,
+      "index_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        21
+      ],
+      "index_max_non_integer": 0.0,
+      "index_ids_unknown": [],
+      "labelled_objects_in_index": 9,
+      "worst_mask_in_obb_fraction": 0.9927,
+      "per_object_mask_in_obb": [
+        [
+          "Tube_Holder",
+          1.0
+        ],
+        [
+          "Glass_Tube",
+          1.0
+        ],
+        [
+          "Glass_Tube.001",
+          0.9927
+        ],
+        [
+          "Glass_Tube.002",
+          1.0
+        ],
+        [
+          "Slide_Holder",
+          1.0
+        ],
+        [
+          "Eppendorf_Rack",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.000",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.001",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.002",
+          1.0
+        ]
+      ]
+    },
+    {
+      "frame": "000003",
+      "depth_m_min": 0.3993,
+      "depth_m_max": 0.9904,
+      "background_fraction": 0.0,
+      "index_ids": [
+        0,
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        10,
+        12
+      ],
+      "index_max_non_integer": 0.0,
+      "index_ids_unknown": [],
+      "labelled_objects_in_index": 7,
+      "worst_mask_in_obb_fraction": 1.0,
+      "per_object_mask_in_obb": [
+        [
+          "Tube_Holder",
+          1.0
+        ],
+        [
+          "Glass_Tube",
+          1.0
+        ],
+        [
+          "Glass_Tube.001",
+          1.0
+        ],
+        [
+          "Slide_Holder",
+          1.0
+        ],
+        [
+          "Eppendorf_Rack",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.000",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.002",
+          1.0
+        ]
+      ]
+    },
+    {
+      "frame": "000004",
+      "depth_m_min": 0.3047,
+      "depth_m_max": 3.2201,
+      "background_fraction": 0.197,
+      "index_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        12,
+        14,
+        20
+      ],
+      "index_max_non_integer": 0.0,
+      "index_ids_unknown": [],
+      "labelled_objects_in_index": 8,
+      "worst_mask_in_obb_fraction": 1.0,
+      "per_object_mask_in_obb": [
+        [
+          "Tube_Holder",
+          1.0
+        ],
+        [
+          "Glass_Tube",
+          1.0
+        ],
+        [
+          "Glass_Tube.001",
+          1.0
+        ],
+        [
+          "Glass_Tube.002",
+          1.0
+        ],
+        [
+          "Glass_Tube.003",
+          1.0
+        ],
+        [
+          "Slide_Holder",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.001",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.002",
+          1.0
+        ]
+      ]
+    },
+    {
+      "frame": "000005",
+      "depth_m_min": 0.5284,
+      "depth_m_max": 1.0613,
+      "background_fraction": 0.0,
+      "index_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        11,
+        13,
+        14,
+        15,
+        16
+      ],
+      "index_max_non_integer": 0.0,
+      "index_ids_unknown": [],
+      "labelled_objects_in_index": 8,
+      "worst_mask_in_obb_fraction": 1.0,
+      "per_object_mask_in_obb": [
+        [
+          "Tube_Holder",
+          1.0
+        ],
+        [
+          "Glass_Tube",
+          1.0
+        ],
+        [
+          "Glass_Tube.001",
+          1.0
+        ],
+        [
+          "Glass_Tube.002",
+          1.0
+        ],
+        [
+          "Slide_Holder",
+          1.0
+        ],
+        [
+          "Eppendorf_Rack",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.000",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.001",
+          1.0
+        ]
+      ]
+    },
+    {
+      "frame": "000006",
+      "depth_m_min": 0.4614,
+      "depth_m_max": 2.4657,
+      "background_fraction": 0.0114,
+      "index_ids": [
+        0,
+        1,
+        7,
+        8,
+        9,
+        10,
+        11,
+        14,
+        16,
+        19
+      ],
+      "index_max_non_integer": 0.0,
+      "index_ids_unknown": [],
+      "labelled_objects_in_index": 5,
+      "worst_mask_in_obb_fraction": 1.0,
+      "per_object_mask_in_obb": [
+        [
+          "Tube_Holder",
+          1.0
+        ],
+        [
+          "Eppendorf_Rack",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.000",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.001",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.002",
+          1.0
+        ]
+      ]
+    },
+    {
+      "frame": "000007",
+      "depth_m_min": 0.663,
+      "depth_m_max": 0.8528,
+      "background_fraction": 0.0,
+      "index_ids": [
+        0,
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        18,
+        21
+      ],
+      "index_max_non_integer": 0.0,
+      "index_ids_unknown": [],
+      "labelled_objects_in_index": 6,
+      "worst_mask_in_obb_fraction": 1.0,
+      "per_object_mask_in_obb": [
+        [
+          "Tube_Holder",
+          1.0
+        ],
+        [
+          "Glass_Tube",
+          1.0
+        ],
+        [
+          "Glass_Tube.001",
+          1.0
+        ],
+        [
+          "Slide_Holder",
+          1.0
+        ],
+        [
+          "Eppendorf_Rack",
+          1.0
+        ],
+        [
+          "Glass_Tube.loose.000",
+          1.0
+        ]
+      ]
+    }
+  ]
+}

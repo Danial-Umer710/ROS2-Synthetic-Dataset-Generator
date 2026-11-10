@@ -242,3 +242,19 @@ assets/*.jpg
 !/results/blenderproc/**/*.csv
 !/results/blenderproc/**/*.sha256
 /dataset_blenderproc_split_check.json
+
+# -------------------- ControlNet stage (branch `controlnet`) --------------------
+/smoke_controlnet/*
+!/smoke_controlnet/vram_probe.json
+/dataset_controlnet*/
+!/results/controlnet/
+/results/controlnet/**
+!/results/controlnet/**/
+!/results/controlnet/**/*.png
+!/results/controlnet/**/*.jpg
+!/results/controlnet/**/*.jpeg
+!/results/controlnet/**/*.json
+!/results/controlnet/**/*.yaml
+!/results/controlnet/**/*.csv
+!/results/controlnet/**/*.md
+!/results/controlnet/**/*.sha256

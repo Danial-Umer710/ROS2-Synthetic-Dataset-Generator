@@ -8,4 +8,4 @@ matplotlib==3.11.1
 pillow==12.3.0
 # Real test set download (scripts/prep_real_test_set.py, Hugging Face Hub)
 datasets==5.1.0
-huggingface-hub==2.3.0
+huggingface-hub==1.33.0

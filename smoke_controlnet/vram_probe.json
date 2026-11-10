@@ -1,0 +1,27 @@
+{
+  "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "total_vram_gib": 6.0,
+  "resolution": [
+    640,
+    640
+  ],
+  "steps": 25,
+  "strength": 0.45,
+  "effective_denoising_steps": 11,
+  "controlnets": [
+    "depth",
+    "canny"
+  ],
+  "dtype": "float16",
+  "cpu_offload": false,
+  "attention": "torch SDPA",
+  "weights_on_gpu_gib": 3.38,
+  "peak_allocated_gib": 4.37,
+  "peak_reserved_gib": 4.74,
+  "budget_gib": 5.5,
+  "fits": true,
+  "load_seconds": 16.6,
+  "seconds_per_image": 4.43,
+  "projected_minutes_per_1000_images": 73.8,
+  "torch": "2.5.1+cu121"
+}

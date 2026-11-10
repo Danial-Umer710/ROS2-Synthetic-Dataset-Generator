@@ -213,6 +213,9 @@ def parse_args():
     p.add_argument("--hdri-dir", default=None, help="optional folder of HDRIs/images used as world backgrounds")
     p.add_argument("--overwrite", action="store_true", help="re-render frames whose outputs already exist")
     p.add_argument("--scene-json", action="store_true", help="write per-frame scene and label membership JSON")
+    p.add_argument("--export-passes", action="store_true",
+                   help="also write Depth (Z), Normal and Object-Index EXR passes to <out>/passes/ "
+                        "(ControlNet conditioning; Cycles only). Labels and geometry are unchanged.")
     return p.parse_args(argv)
 
 
@@ -1480,6 +1483,54 @@ def render_with_exposure_guard(S, img_path, stem):
         bpy.ops.render.render(write_still=True)
 
 
+PASS_SPECS = (                    # (folder, Render Layers socket, EXR bit depth)
+    ("depth", "Depth", "32"),     # camera-space Z distance in metres, first surface hit
+    ("normal", "Normal", "16"),   # world-space shading normal, first surface hit
+    ("index", "IndexOB", "32"),   # Object.pass_index of the first surface hit (0 = bench / world)
+)
+
+
+def assign_pass_indices(S):
+    """Unique Object.pass_index per labelled object and distractor (1, 2, ...); the bench and
+    world stay 0. The per-frame scene JSON maps every index back to its object and class."""
+    for i, obj in enumerate(S.labelled + S.distractors, start=1):
+        obj.pass_index = i
+
+
+def setup_pass_export(S, passes_dir):
+    """Enable the Z / Normal / IndexOB view-layer passes and route them through the compositor
+    into one File Output node (one sub-folder per pass). The Combined image is routed to the
+    Composite node unchanged, so the saved RGB PNG is the same as without pass export.
+    File names come from the frame number, so main() sets scene.frame_current = frame index."""
+    if S.scene.render.engine != "CYCLES":
+        raise RuntimeError("--export-passes needs --engine cycles (EEVEE has no object-index pass)")
+    layer = S.scene.view_layers[0]
+    layer.use_pass_z = layer.use_pass_normal = layer.use_pass_object_index = True
+    S.scene.use_nodes = True
+    S.scene.render.use_compositing = True
+    tree = S.scene.node_tree
+    tree.nodes.clear()
+    rl = tree.nodes.new("CompositorNodeRLayers")
+    comp = tree.nodes.new("CompositorNodeComposite")
+    tree.links.new(rl.outputs["Image"], comp.inputs["Image"])
+    out = tree.nodes.new("CompositorNodeOutputFile")
+    out.base_path = str(passes_dir)
+    out.format.file_format = "OPEN_EXR"                     # EXR stores raw linear data (no view transform)
+    out.format.exr_codec = "ZIP"
+    out.file_slots.clear()
+    for folder, socket, depth in PASS_SPECS:
+        out.file_slots.new(f"{folder}/######")              # returns the input socket in 4.x
+        slot = out.file_slots[len(out.file_slots) - 1]
+        slot.use_node_format = False
+        slot.format.file_format = "OPEN_EXR"
+        slot.format.color_depth = depth
+        slot.format.exr_codec = "ZIP"
+        slot.format.color_mode = "RGB" if folder == "normal" else "BW"
+        tree.links.new(rl.outputs[socket], out.inputs[-1])
+        (passes_dir / folder).mkdir(parents=True, exist_ok=True)
+    log(f"pass export: {', '.join(f'{f} ({s}, {d}-bit EXR)' for f, s, d in PASS_SPECS)} -> {passes_dir}")
+
+
 def write_data_yaml(out_dir):
     names = {s["class_id"]: s["name"] for s in OBJECT_SPECS}
     text = (f"path: {out_dir.as_posix()}\n"
@@ -1508,6 +1559,9 @@ def main():
     log(f"Blender {bpy.app.version_string} | STLs: {stl_dir} | output: {out_dir} | labels: {args.label_mode}")
 
     S = build_scene(args, stl_dir)
+    assign_pass_indices(S)
+    if args.export_passes:
+        setup_pass_export(S, out_dir / "passes")
     write_data_yaml(out_dir)
 
     # Sanity-check the vectorised projector against Blender's reference once per run.
@@ -1529,6 +1583,7 @@ def main():
         rng = random.Random(args.seed * 1_000_003 + idx)   # per-frame seed -> reproducible & resumable
         randomize_frame(S, rng)
         lines, labelled_names = compute_labels(S)
+        S.scene.frame_current = idx                         # names the pass EXRs <stem>.exr
         render_with_exposure_guard(S, img_path, stem)
         lbl_path.write_text("\n".join(lines) + ("\n" if lines else ""))
         if scene_dir:
@@ -1545,6 +1600,7 @@ def main():
                     "pose": obj.get("pose"),
                     "location": [float(value) for value in obj.location],
                     "labelled": obj.name in labelled_names,
+                    "pass_index": int(obj.pass_index),
                 })
             (scene_dir / f"{stem}.json").write_text(json.dumps({
                 "objects": objects,
