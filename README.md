@@ -1,32 +1,46 @@
 # UR16e Sim2Real Labware Detection
 
-**A reproducible synthetic-data baseline for oriented detection of transparent and matte laboratory objects.**
+**A diffusion-stylized synthetic-data pipeline for oriented detection of laboratory objects — narrowing the Sim2Real gap by repainting geometry-true Blender renders with a frozen ControlNet model.**
 
 > **Branch Structure**
-> - **`blenderproc` (this branch):** The `main` baseline **plus** the distractor/hindrance and loose-tube extension described in [Distractor and loose-tube extension](#distractor-and-loose-tube-extension-this-branch): two unlabelled translucent Eppendorf distractor meshes (`stl_models/distractors/`), a second 1,000-image 80/10/10 dataset (`dataset_blenderproc/`), a second trained model (`weights/blenderproc/`), and its results and cross-evaluation against the baseline (`results/blenderproc/`).
-> - **`main`:** Clean v2 CAD/STL procedural Blender baseline (`blender/generate_synthetic_dataset.py`), 4 STL labware meshes (`stl_models/`), 1,000-image 80/10/10 split (`dataset/`), trained YOLOv8n-OBB weights (`weights/`), and complete training/validation/test results and previews (`results/baseline/`).
+> - **`controlnet` (this branch):** The `blenderproc` pipeline **plus** the diffusion realism stage described in [ControlNet realism stage](#controlnet-realism-stage-this-branch): EXR geometry passes exported from Blender (`--export-passes`), Multi-ControlNet img2img stylization (`scripts/controlnet_stylize.py`), label-safe foreground compositing, two stylized 1,000-image datasets (`dataset_controlnet/`, `dataset_controlnet_fg05/`), two trained models (`weights/controlnet/`, `weights/controlnet_fg05/`), and their synthetic + real-camera evaluations (`results/controlnet/`). Best real-world score to date: **56.56% mAP50–95** on 282 real UR16e frames.
+> - **`blenderproc`:** The `main` baseline **plus** distractor/hindrance objects and loose tubes (see [Distractor and loose-tube extension](#distractor-and-loose-tube-extension-inherited-from-blenderproc)), a second dataset (`dataset_blenderproc/`), a second model (`weights/blenderproc/`), and the real-camera Sim2Real benchmark (`dataset/real_test/`).
+> - **`main`:** Clean v2 CAD/STL procedural Blender baseline, 1,000-image 80/10/10 split (`dataset/`), trained YOLOv8n-OBB weights (`weights/`), complete results (`results/baseline/`).
 > - **`dev`:** Active development branch for upcoming Sim2Real improvements (Docker reproducibility, further scene variation).
 > - **`legacy-v1`:** Archived v1 Blender HTTP Server pipeline, the 4,000-image `YOLO_Main_Dataset`, the 50-epoch `ur16e_main_run_4000-3` training run (`99.5% mAP@50`), and `predict-12` test predictions.
 
-This project connects STL geometry, procedural Blender rendering, geometry-derived oriented bounding-box (OBB) annotations, and YOLOv8n-OBB training. Its intended application is laboratory perception for a UR16e robot. Each published experiment uses **1,000 synthetic images**, a fixed **800/100/100 train/validation/test split**, and a fresh **30-epoch** fine-tuning run from the original DOTA-pretrained `yolov8n-obb.pt`.
+This project connects STL geometry, procedural Blender rendering, geometry-derived oriented bounding-box (OBB) annotations, diffusion-based appearance transfer, and YOLOv8n-OBB training. Its intended application is laboratory perception for a UR16e robot. Each published experiment uses **1,000 synthetic images**, a fixed **800/100/100 train/validation/test split**, and a fresh **30-epoch** fine-tuning run from the original DOTA-pretrained `yolov8n-obb.pt`.
 
-| Held-out synthetic result (mAP50–95) | Baseline model (`weights/best.pt`) | Distractor model (`weights/blenderproc/best.pt`) |
-|---|---:|---:|
-| Baseline test split (`dataset/`, no distractors, tubes only in holder) | **88.29%** | **88.27%** |
-| Distractor test split (`dataset_blenderproc/`, 2–6 distractors, 1–3 loose tubes) | **78.57%** | **87.92%** |
-| Own validation split | 89.79% | 88.18% |
+**Real-camera results on the 282-frame real test set** ([`dataset/real_test/`](dataset/real_test/), all models evaluated identically — the number that matters on this branch):
 
-Both models are YOLOv8n-OBB at 640 × 640, trained for 30 epochs on an NVIDIA GeForce RTX 4050 Laptop GPU (6 GB). The distractor model keeps the baseline's accuracy on the clean scenes while recovering **9.4 mAP50–95 points** on scenes with distractors and loose tubes, where the baseline model misses lying tubes and labels distractors as `Slide_Holder` (details [below](#results-compared-to-the-baseline)).
+| Model | Training data | Real mAP50 | Real mAP50–95 |
+|---|---|---:|---:|
+| `weights/best.pt` | 800 clean synthetic | 49.38% | 37.28% |
+| `weights/blenderproc/best.pt` | 800 synthetic + distractors/loose tubes | 66.30% | 48.91% |
+| `weights/controlnet/best.pt` | 800 ControlNet-stylized, fg-keep 1.0 | 63.43% | 48.04% |
+| `weights/controlnet_fg05/best.pt` | 800 ControlNet-stylized, fg-keep 0.5 | **73.93%** | **56.56%** |
 
-> **Scope:** these are image-disjoint, held-out **synthetic** results, not real-camera or robot-grasp results. Real UR16e camera results (37.28% / 48.91% mAP50–95 for the two models) are in [Real-camera Sim2Real evaluation](#real-camera-sim2real-evaluation-datasetreal_test). An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
+Keeping 50% of the original rendered pixels inside the labelled-object masks (`fg-keep 0.5`) beats both the fully stylized variant and the previous best model: **+7.65 mAP50–95 points** over the distractor model, and **+19.3 points** over the clean baseline. `Glass_Tube`, the class that drove most of the gap, recovers from 2.0% (baseline) / 29.3% (distractor) to **38.4%** real mAP50–95.
 
-| Baseline test prediction (`main` model, clean scene) | Distractor-model test prediction (this branch; unboxed Eppendorf distractors, boxed loose tube) |
-|---|---|
-| ![Baseline held-out test prediction](results/baseline/test/previews/000228.png) | ![Distractor held-out test prediction](results/blenderproc/test/previews/000228.png) |
+> **Scope:** real-camera scores measure detection against auto-generated instance-mask ground truth on one benchmark session, not robot grasp success. Synthetic holdout scores (~88%) remain same-renderer-domain numbers. An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
+
+![Original render vs ControlNet-stylized variants with unchanged GT boxes](results/controlnet/stylize_grid_comparison.jpg)
+
+*Left to right: original Cycles render, then img2img at strength 0.35 / 0.45 / 0.55 with fg-keep 1.0 — ground-truth OBBs (drawn on top) are identical in every column.*
 
 ## Contents
 
-- [Distractor and loose-tube extension (this branch)](#distractor-and-loose-tube-extension-this-branch)
+- [ControlNet realism stage (this branch)](#controlnet-realism-stage-this-branch)
+  - [Why diffusion stylization](#why-diffusion-stylization)
+  - [Pipeline at a glance](#pipeline-at-a-glance)
+  - [Step 1 — geometry passes from the same render](#step-1--geometry-passes-from-the-same-render)
+  - [Step 2 — frozen diffusion stylization](#step-2--frozen-diffusion-stylization)
+  - [Step 3 — label-safe compositing (fg-keep)](#step-3--label-safe-compositing-fg-keep)
+  - [Step 4 — split, train, evaluate](#step-4--split-train-evaluate)
+  - [Published stylized datasets](#published-stylized-datasets)
+  - [Results](#results)
+  - [Reproducing this stage](#reproducing-this-stage)
+- [Distractor and loose-tube extension (inherited from `blenderproc`)](#distractor-and-loose-tube-extension-inherited-from-blenderproc)
 - [Repository and published assets](#repository-and-published-assets)
 - [Classes, geometry, and assembly](#classes-geometry-and-assembly)
 - [Dataset and split integrity](#dataset-and-split-integrity)
@@ -38,9 +52,165 @@ Both models are YOLOv8n-OBB at 640 × 640, trained for 30 epochs on an NVIDIA Ge
 - [Limitations and next experiments](#limitations-and-next-experiments)
 - [Provenance and licensing](#provenance-and-licensing)
 
-## Distractor and loose-tube extension (this branch)
+## ControlNet realism stage (this branch)
 
-This branch implements two items of reviewer feedback on the baseline: (1) **hindrance / distractor objects** that look like labware but must *not* be detected, and (2) **loose `Glass_Tube` instances outside the holder**, lying on the bench as well as standing, so the detector does not learn that tubes only ever appear upright inside a rack. The branch is named for the planned BlenderProc migration; the implemented generator is still the headless `bpy` pipeline in [`blender/generate_synthetic_dataset.py`](blender/generate_synthetic_dataset.py), extended as described here. The BlenderProc port itself remains future work ([`blenderproc/README.md`](blenderproc/README.md)). Everything in the later sections of this README (camera, projection, OBB, lighting, split, training protocol) applies unchanged to the extension; only the scene-composition additions are documented in this section.
+### Why diffusion stylization
+
+The real-camera evaluation on `blenderproc` showed that the remaining Sim2Real gap is dominated by **appearance, not geometry**: the distractor model already detects loose tubes and ignores look-alike objects, yet still drops from 87.92% (its own synthetic test split) to 48.91% real mAP50–95. Cycles renders are geometrically correct but visually recognisable as renders — clean procedural materials, perfect edges, synthetic lighting.
+
+This branch attacks the appearance gap directly. Each synthetic frame is repainted by a **frozen diffusion model** into a photographic style, while the labelled-object geometry is held fixed, so the exact same YOLOv8-OBB labels remain valid. The idea follows the img2img-stylization approach used in YOLO-sd-style Sim2Real pipelines, with one difference that matters for labels: conditioning and compositing are driven by **exact renderer geometry** (depth + per-object index), not by an estimated edge map.
+
+### Pipeline at a glance
+
+```text
+blender/generate_synthetic_dataset.py --export-passes        (Cycles, seed 42, 1000 frames)
+  ├─ images/train/*.png   labels/train/*.txt   data.yaml     <- unchanged baseline outputs
+  ├─ passes/depth/*.exr   passes/normal/*.exr  passes/index/*.exr
+  └─ scene/*.json                                            <- index -> object/class mapping
+        │
+        ▼
+scripts/controlnet_passes.py     QA: metric depth, integer ids, labelled masks inside GT OBBs
+scripts/controlnet_setup.py      pinned HF downloads + VRAM probe (5.5 GiB budget on 6 GiB GPU)
+        │
+        ▼
+scripts/controlnet_stylize.py    SD1.5 Realistic Vision + depth & geometry-edge ControlNets
+        │                        img2img (strength 0.45) -> index-mask composite (fg-keep)
+        ▼
+<config>/images/*.png + unchanged labels -> yolo_dataset_splitter.py (seed 42)
+        │
+        ▼
+train_yolo.py (fresh yolov8n-obb.pt, 30 ep) -> evaluate_yolo.py (stylized holdout)
+                                           -> eval_real_test.py  (282 real frames)
+```
+
+### Step 1 — geometry passes from the same render
+
+The generator's `--export-passes` flag (Cycles only) enables the Z-depth, world-normal, and object-index view-layer passes and routes them through a compositor File Output node into `passes/{depth,normal,index}/<frame>.exr`. Every scene object is assigned a `pass_index`; the per-frame `scene/<frame>.json` (written by `--scene-json`) maps each index to its object, class, and `labelled` flag. The Combined image still goes to the Composite node, so **the saved RGB and labels are bit-identical to a run without pass export**.
+
+[`scripts/controlnet_passes.py`](scripts/controlnet_passes.py) turns the passes into conditioning inputs and QA's them against the labels: depth must be finite and metric, index values must be integers that all resolve in the scene JSON, and every labelled object's index-mask pixels must lie inside its ground-truth OBB. The published QA contact sheet is [`results/controlnet/smoke_passes_grid.jpg`](results/controlnet/smoke_passes_grid.jpg) ([report](results/controlnet/smoke_passes_grid.json)).
+
+### Step 2 — frozen diffusion stylization
+
+[`scripts/controlnet_stylize.py`](scripts/controlnet_stylize.py) runs a Multi-ControlNet img2img pipeline. Two conditioning maps are derived **from the EXR passes, not from the rendered image**:
+
+- **Depth ControlNet** input: metric Z converted to percentile-normalised inverse depth (near = white, background = black) — the MiDaS-style encoding `control_v11f1p_sd15_depth` was trained on.
+- **Edge ControlNet** input: the boundary mask of the object-index map — white silhouette edges on black, dilated 3 px. This feeds the *canny* ControlNet a **geometry-only edge map**: true object silhouettes with no shading, texture, or reflection edges, which is why the stylized frame keeps the render's exact object layout.
+
+Frozen configuration (recorded per run in `results/controlnet/s045_*_manifest.json`):
+
+| Component | Pinned value |
+|---|---|
+| Base model | `SG161222/Realistic_Vision_V5.1_noVAE` @ `1e9f017a7b` |
+| VAE | `stabilityai/sd-vae-ft-mse` @ `31f26fdeee` |
+| ControlNets | `lllyasviel/control_v11f1p_sd15_depth` @ `539f99181d`, `lllyasviel/control_v11p_sd15_canny` @ `115a470d54` |
+| Scheduler | DPM++ 2M midpoint, Karras sigmas |
+| Steps / strength | 25 / **0.45** (≈ 11 effective denoising steps) |
+| Guidance / ControlNet scales | 6.0 / depth 1.0, edge 0.6 (edge guidance ends at 0.8) |
+| Precision / attention | fp16, PyTorch SDPA, no CPU offload |
+| Per-frame seed | `42 × 1,000,003 + frame_index` |
+
+[`scripts/controlnet_setup.py`](scripts/controlnet_setup.py) downloads the four pinned snapshot revisions (`--download`) and probes peak VRAM of the exact pipeline (`--probe`). Measured on the RTX 4050 Laptop 6 GB: **3.38 GiB** of weights, **4.74 GiB** peak reserved (fits the 5.5 GiB budget), **~4.4–5.9 s/frame** → roughly **1.5 hours per 1,000 frames** at 640×640. Report: [`smoke_controlnet/vram_probe.json`](smoke_controlnet/vram_probe.json).
+
+### Step 3 — label-safe compositing (fg-keep)
+
+Diffusion adds photographic texture but can also move edges slightly. The OBB labels were computed on the *rendered* pixels, so each stylized frame is composited back against the original render inside the labelled-object mask:
+
+$$
+\mathrm{out} = (\alpha \cdot k)\,\mathrm{rgb} + (1 - \alpha \cdot k)\,\mathrm{stylized},
+$$
+
+where $\alpha$ is the feathered union of all **labelled** objects' index-mask pixels (dilate 3 px, Gaussian feather 2 px) and $k$ is `fg-keep`:
+
+- **`fg-keep 1.0`** (`dataset_controlnet/`): original pixels inside every labelled mask — a *hard* label guarantee; only background, distractors, and shading are diffused.
+- **`fg-keep 0.5`** (`dataset_controlnet_fg05/`): a 50/50 blend inside labelled masks — labelled objects get half the diffusion texture while geometry stays render-true; a softer guarantee that buys noticeably more realism.
+
+Because the mask comes from the object-index pass, it matches the visible-silhouette label convention exactly — including transparent objects and occlusion boundaries.
+
+### Step 4 — split, train, evaluate
+
+The stylized images plus the **unchanged** source labels form a standard YOLO dataset. The splitter was run with seed 42, so `dataset_controlnet/` and `dataset_controlnet_fg05/` have **the same train/val/test stem membership** as `dataset_blenderproc/` (the underlying scenes differ — the source was re-rendered with the current generator, i.e. Falcon tubes and ~50% hole fill). Both models then trained with the *unchanged* recipe: fresh `yolov8n-obb.pt`, 800 images, 30 epochs, 640/batch 16, seed 42, deterministic, validation-selected `best.pt`.
+
+Runs: `controlnet_s045_800_30ep` → `weights/controlnet/`, `controlnet_s045_fg05_800_30ep` → `weights/controlnet_fg05/`. Selected checkpoint SHA256:
+
+```text
+weights/controlnet/best.pt      75ab3144d60b2fad8e1caf7c58d09a9c537eddfc9cd0e624383f12cd042ccaff
+weights/controlnet_fg05/best.pt 6f2b6ef144fe712daf0b0b2b0a39e4c13b59f2b7d40aa3a390d9d9f2ac331b39
+```
+
+### Published stylized datasets
+
+| Directory | Stylization | Size | Train | Val | Test | Labelled instances |
+|---|---|---:|---:|---:|---:|---:|
+| [`dataset_controlnet/`](dataset_controlnet/) | strength 0.45, fg-keep 1.0 | ~525 MiB | 800 | 100 | 100 | 6,362 |
+| [`dataset_controlnet_fg05/`](dataset_controlnet_fg05/) | strength 0.45, fg-keep 0.5 | ~523 MiB | 800 | 100 | 100 | 6,362 |
+
+Labels are identical between the two datasets (copied from the same source render); only the pixels differ. Per-frame diffusion seeds and every pipeline parameter are frozen in [`s045_fg100_manifest.json`](results/controlnet/s045_fg100_manifest.json) and [`s045_fg050_manifest.json`](results/controlnet/s045_fg050_manifest.json). The ~5 GiB source render (`dataset_controlnet_src/`, images + EXR passes + scene JSON) is **not** published — regenerate it with `--export-passes` (commands below).
+
+### Results
+
+All four models were evaluated on the **same real test set** ([`dataset/real_test/`](dataset/real_test/), 282 real UR16e frames, 1,592 instances; imgsz 640, conf 0.001, NMS IoU 0.7 — see [Real-camera Sim2Real evaluation](#real-camera-sim2real-evaluation-datasetreal_test)):
+
+| Model | Real P | Real R | Real mAP50 | Real mAP50–95 | Metrics |
+|---|---:|---:|---:|---:|---|
+| Baseline `weights/best.pt` | 54.02 | 46.44 | 49.38 | 37.28 | [json](results/baseline/real_world_eval/metrics.json) |
+| Distractor `weights/blenderproc/best.pt` | 65.67 | 61.42 | 66.30 | 48.91 | [json](results/blenderproc/real_world_eval/metrics.json) |
+| ControlNet fg-keep 1.0 | 62.96 | 62.70 | 63.43 | 48.04 | [json](results/controlnet/real_world_eval/metrics.json) |
+| **ControlNet fg-keep 0.5** | **73.46** | **65.64** | **73.93** | **56.56** | [json](results/controlnet/real_world_eval_fg05/metrics.json) |
+
+Per-class real mAP50–95 for the two ControlNet models:
+
+| Class | fg-keep 1.0 | fg-keep 0.5 |
+|---|---:|---:|
+| Tube_Holder | 78.51 | **81.72** |
+| Glass_Tube | 13.35 | **38.39** |
+| Slide_Holder | 44.73 | **45.41** |
+| Eppendorf_Rack | 55.55 | **60.71** |
+
+On their **own stylized test splits** (same-domain holdouts, 100 images each): fg-keep 1.0 model **88.54%** mAP50–95, fg-keep 0.5 model **87.28%** ([fg1.0 metrics](results/controlnet/stylized_test_eval/metrics.json), [fg0.5 metrics](results/controlnet/stylized_test_eval_fg05/metrics.json)) — in line with the ~88% of the earlier synthetic holdouts.
+
+Findings:
+
+1. **Full stylization alone did not beat the distractor model.** fg-keep 1.0 scores 48.04% real mAP50–95 (vs 48.91%): photorealistic backgrounds help `Tube_Holder` (+3.5 pts) but the untouched-render foreground keeps `Glass_Tube` at 13.35% — the domain gap on the *object itself* is what was hurting.
+2. **Blending diffusion into the foreground is the win.** fg-keep 0.5 lifts `Glass_Tube` to 38.39% (+25 pts over fg-keep 1.0, +9.1 over the distractor model) and every other class too, for +7.65 pts overall. Half-rendered texture on the object is apparently close enough to the Falcon-tube appearance that the detector finally transfers — while still differing enough from both domains to avoid over-fitting either.
+3. **`Slide_Holder` recall (0.42) and `Glass_Tube` precision (0.48) remain the weakest points**; residual causes include the 15 ml vs 50 ml real/synthetic tube size mismatch and unannotated real clutter counted as false positives.
+
+Per-frame prediction overlays for all 282 real frames are published under [`results/controlnet/real_world_eval*/predictions/`](results/controlnet/).
+
+### Reproducing this stage
+
+```powershell
+# 0. install the diffusion stack on top of the base environment
+python -m pip install -r requirements.txt -r requirements-controlnet.txt
+python scripts/controlnet_setup.py --download
+python scripts/controlnet_setup.py --probe --image dataset/images/train/000000.png
+
+# 1. render the source dataset with passes into a NEW directory
+#    (previous renders ran ~3.8 s/frame; pass EXR writes add a little more)
+& "C:\Program Files\Blender Foundation\Blender 4.3\blender.exe" -b -P "blender/generate_synthetic_dataset.py" -- --num-images 1000 --samples 64 --seed 42 --engine cycles --scene-json --export-passes --out-dir "dataset_controlnet_src_repro"
+
+# 2. QA the passes against the labels (contact sheet + JSON report)
+python scripts/controlnet_passes.py --dataset dataset_controlnet_src_repro --out results/controlnet_repro/smoke_passes_grid.jpg
+
+# 3. stylize all 1,000 frames (~1.5 h per config); writes <out>/s045_fg050/images/*.png + manifest
+python scripts/controlnet_stylize.py --dataset dataset_controlnet_src_repro --strength 0.45 --fg-keep 0.5 --out dataset_controlnet_stylized
+# for the fg-keep 1.0 variant: --fg-keep 1.0 ; for a strength grid + comparison sheet:
+#   --grid 0.35 0.45 0.55 --sheet results/controlnet_repro/stylize_grid.jpg
+
+# 4. promote the config dir to a dataset: add the UNCHANGED labels + data.yaml from the
+#    source render next to the stylized images, then apply the frozen seed-42 split
+python scripts/yolo_dataset_splitter.py --dataset <assembled_dir> --seed 42 --apply
+python scripts/yolo_dataset_splitter.py --dataset <assembled_dir> --seed 42 --check
+
+# 5. train + evaluate exactly like every other stage
+python -u scripts/train_yolo.py --dataset <assembled_dir> --weights yolov8n-obb.pt --epochs 30 --imgsz 640 --batch 16 --device 0 --name controlnet_repro
+python scripts/eval_real_test.py --weights runs/obb/UR16e_Labware_Detection/controlnet_repro/weights/best.pt --output results/controlnet_repro/real_world_eval
+```
+
+To skip rendering and reuse the published stylized datasets, go straight to step 4 with `--dataset dataset_controlnet` or `dataset_controlnet_fg05` (use `--check` only; their splits are already frozen).
+
+## Distractor and loose-tube extension (inherited from `blenderproc`)
+
+This section documents the `blenderproc`-branch stage this branch builds on. It implements two items of reviewer feedback on the baseline: (1) **hindrance / distractor objects** that look like labware but must *not* be detected, and (2) **loose `Glass_Tube` instances outside the holder**, lying on the bench as well as standing, so the detector does not learn that tubes only ever appear upright inside a rack. The `blenderproc` branch is named for the planned BlenderProc migration; the implemented generator is still the headless `bpy` pipeline in [`blender/generate_synthetic_dataset.py`](blender/generate_synthetic_dataset.py), extended as described here. The BlenderProc port itself remains future work ([`blenderproc/README.md`](blenderproc/README.md)). Everything in the later sections of this README (camera, projection, OBB, lighting, split, training protocol) applies unchanged to the extension; only the scene-composition additions are documented in this section.
 
 ### Added assets
 
@@ -49,6 +219,8 @@ This branch implements two items of reviewer feedback on the baseline: (1) **hin
 | `stl_models/distractors/eppendorf_big.stl` | Distractor (hindrance) | **none** | 21.0 × 21.0 × 133.0 |
 | `stl_models/distractors/eppendorf0p5ml.stl` | Distractor (hindrance) | **none** | 10.0 × 17.6 × 31.3 |
 | `stl_models/Tube.stl` (existing) | Additional **loose** instances on the bench | `1: Glass_Tube` | 116.4 long, 30 mm body |
+
+*Note:* after `dataset_blenderproc/` was frozen, `Tube.stl` was replaced by the procedural `Falcon_Tube.stl` (see [Generator fixes](#generator-fixes-for-the-real-camera-failure-modes)); current renders — including the ControlNet source dataset — use the Falcon mesh for both holder and loose tubes.
 
 Both distractor meshes are imported with the same millimetre-to-metre scale, Y-up fix, welding, and ground re-centring as the target meshes, and their longest bounding-box axis is aligned with $z$. The class list is unchanged: `0: Tube_Holder`, `1: Glass_Tube`, `2: Slide_Holder`, `3: Eppendorf_Rack`.
 
@@ -200,14 +372,16 @@ The full 100-image prediction record is [`results/blenderproc/test/predictions.j
 
 The repository's synthetic holdouts cannot show real-world transfer, so both checkpoints were also evaluated on **real UR16e camera frames**: the [`ABC-iRobotics/LabWare_Items`](https://huggingface.co/datasets/ABC-iRobotics/LabWare_Items) dataset (MIT license), `instance_segmentation` configuration, official **test** split — 282 images at 1280×800 with 1,592 annotated instances of the same four lab items. [`scripts/prep_real_test_set.py`](scripts/prep_real_test_set.py) converts each instance mask to a tight oriented box (`cv2.minAreaRect` over visible pixels — the same visibility convention as the synthetic labels), maps `TubeHolder/Tube/Slide_holder/eppendorf_tarto` to our class ids 0–3, and writes `dataset/real_test/` plus a provenance manifest. [`scripts/eval_real_test.py`](scripts/eval_real_test.py) runs the frozen checkpoints (imgsz 640, conf 0.001, NMS IoU 0.7); overlays for every frame are under `results/*/real_world_eval/predictions/`.
 
-| Model | Real P | Real R | Real mAP50 | Real mAP50–95 | Synthetic test mAP50–95 |
+| Model | Real P | Real R | Real mAP50 | Real mAP50–95 | Own synthetic test mAP50–95 |
 |---|---:|---:|---:|---:|---:|
-| Baseline `weights/best.pt` | 54.02 | 46.44 | 49.38 | **37.28** | 88.29 |
-| Distractor `weights/blenderproc/best.pt` | 65.67 | 61.42 | 66.30 | **48.91** | 87.92 |
+| Baseline `weights/best.pt` | 54.02 | 46.44 | 49.38 | 37.28 | 88.29 (clean test) |
+| Distractor `weights/blenderproc/best.pt` | 65.67 | 61.42 | 66.30 | 48.91 | 87.92 (distractor test) |
+| ControlNet fg-keep 1.0 `weights/controlnet/best.pt` | 62.96 | 62.70 | 63.43 | 48.04 | 88.54 (stylized test) |
+| **ControlNet fg-keep 0.5 `weights/controlnet_fg05/best.pt`** | **73.46** | **65.64** | **73.93** | **56.56** | 87.28 (stylized test) |
 
-Full numbers, per-class tables, and the report: [`results/baseline/real_world_eval/sim2real_report.json`](results/baseline/real_world_eval/sim2real_report.json) and [`SIM2REAL_REPORT.md`](results/baseline/real_world_eval/SIM2REAL_REPORT.md).
+Full numbers, per-class tables, and the report: [`results/baseline/real_world_eval/sim2real_report.json`](results/baseline/real_world_eval/sim2real_report.json) and [`SIM2REAL_REPORT.md`](results/baseline/real_world_eval/SIM2REAL_REPORT.md); the ControlNet-stage evaluations are under [`results/controlnet/real_world_eval*/`](results/controlnet/). "Own synthetic test" above refers to each model's same-domain holdout — it is not comparable across rows.
 
-The Sim2Real gap is large but structured: `Glass_Tube` accounts for most of it — the real `Tube` items are Falcon-style conical tubes lying loose (the baseline only ever saw thin glass tubes upright inside the holder), and its real `Glass_Tube` mAP50 is 4.8%. The distractor model's loose-tube training lifts this to 43.4% and gains 11.6 mAP50–95 points overall. Remaining error modes: the distractor model hallucinates `Glass_Tube` inside the real rack's empty holes (in synthetic scenes holes always contained tubes), the baseline labels real loose tubes `Slide_Holder`, and unannotated scene clutter counts as false positives. These real numbers are the reference baseline for the planned ControlNet/diffusion realism phase.
+The Sim2Real gap is large but structured: `Glass_Tube` accounts for most of it — the real `Tube` items are Falcon-style conical tubes lying loose (the baseline only ever saw thin glass tubes upright inside the holder), and its real `Glass_Tube` mAP50 is 4.8%. The distractor model's loose-tube training lifts this to 43.4% and gains 11.6 mAP50–95 points overall. Remaining error modes: the distractor model hallucinates `Glass_Tube` inside the real rack's empty holes (in synthetic scenes holes always contained tubes), the baseline labels real loose tubes `Slide_Holder`, and unannotated scene clutter counts as false positives. The ControlNet stage on this branch takes these two models' numbers as its reference and improves them to **56.56%** real mAP50–95 — see [Results](#results).
 
 ```powershell
 # rebuild the real test set (HF cache reused), then evaluate a checkpoint on it
@@ -257,47 +431,54 @@ The remainder of this README documents the inherited **baseline** (`main`) pipel
 
 ```text
 blender/
-  generate_synthetic_dataset.py      Standalone headless Blender generator (this branch: + distractors, loose tubes, --scene-json)
+  generate_synthetic_dataset.py      Headless Blender generator (+ distractors, loose tubes,
+                                     --scene-json, --export-passes for ControlNet conditioning)
 stl_models/
   TubeHolder.stl
-  Tube.stl
+  Falcon_Tube.stl                    Procedural Falcon tube (class 1; replaces Tube.stl on this branch)
+  Tube.stl                           Legacy skirted tube (kept for dataset_blenderproc provenance)
   Slide_holder.stl
   eppendorf_tarto.stl
-  distractors/                       Unlabelled hindrance meshes (this branch)
+  distractors/                       Unlabelled hindrance meshes (blenderproc stage)
     eppendorf_big.stl
     eppendorf0p5ml.stl
 scripts/
   yolo_dataset_splitter.py           Split creation and integrity checks
   train_yolo.py                      Fresh training, validation, test previews
   evaluate_yolo.py                   Frozen-checkpoint validation/test evaluation
+  prep_real_test_set.py              Build dataset/real_test from HF LabWare_Items
+  eval_real_test.py                  Frozen-checkpoint evaluation on the real test set
+  generate_falcon_tube.py            Procedural Falcon_Tube.stl generator
+  make_contact_sheet.py              GT-OBB overlay contact sheets for render QA
   visualize_obb_labels.py            Ground-truth label overlays
-  prepare_publication.py            Artifact copying and publication checksums
+  prepare_publication.py             Artifact copying and publication checksums
+  controlnet_setup.py                Pinned HF model downloads + VRAM probe (this branch)
+  controlnet_passes.py               EXR pass loading, conditioning maps, pass-vs-label QA
+  controlnet_stylize.py              Multi-ControlNet img2img stylization + fg-keep compositing
 weights/
-  best.pt                           Baseline validation-selected checkpoint
-  last.pt                           Baseline final training checkpoint
-  blenderproc/                      Distractor model (this branch)
-    best.pt
-    last.pt
-results/baseline/
-  training/                         Original training curves, batches, CSV, arguments, provenance
-  validation/                       Standalone validation metrics, curves, and annotated batches
-  test/                             Test metrics, curves, annotated batches, predictions.json
-    previews/                       Ten preselected test prediction PNGs
-  publication_manifest.json         Source-to-publication mapping and SHA256 checksums
-results/blenderproc/                Distractor model (this branch), same layout as results/baseline
-  training/  validation/  test/previews/
-  cross_evaluation/                 {new_model_on_baseline_test, baseline_model_on_distractors_test, baseline_model_on_distractors_val}
-  smoke/                            8-frame smoke-test overlays and scene JSONs
-  checksums.sha256
+  best.pt  last.pt                   Baseline model (main)
+  blenderproc/best.pt  last.pt       Distractor model (blenderproc)
+  controlnet/best.pt  last.pt        Stylized fg-keep 1.0 model (this branch)
+  controlnet_fg05/best.pt  last.pt   Stylized fg-keep 0.5 model (this branch, best real score)
 dataset/
-  data.yaml                         Portable YOLO configuration
-  split_manifest.json               Frozen memberships, image/pixel/label hashes, instance counts
-  images/{train,val,test}/           800 / 100 / 100 original PNGs
-  labels/{train,val,test}/           Matching OBB TXT files
-dataset_blenderproc/                Distractor + loose-tube dataset (this branch), same layout
-  data.yaml  split_manifest.json  images/  labels/
-  scene/                            Per-frame object/pose/label-membership JSON
-requirements.txt
+  data.yaml  split_manifest.json
+  images/{train,val,test}/  labels/{train,val,test}/     800 / 100 / 100
+  real_test/                       282 real UR16e frames + manifest (evaluation only)
+dataset_blenderproc/               Distractor + loose-tube dataset, same layout + scene/
+dataset_controlnet/                Stylized s=0.45 fg-keep 1.0 dataset (this branch)
+dataset_controlnet_fg05/           Stylized s=0.45 fg-keep 0.5 dataset (this branch)
+results/baseline/                  Baseline training/validation/test + real_world_eval + SIM2REAL_REPORT
+results/blenderproc/               Distractor model results + cross_evaluation + real_world_eval
+results/controlnet/                This branch:
+  training/  training_fg05/        Curves, held-out val, test previews for both stylized models
+  stylized_test_eval{,_fg05}/      Same-domain stylized holdout evaluations
+  real_world_eval{,_fg05}/         Real-test metrics + all 282 prediction overlays
+  smoke_passes_grid.jpg + .json    Pass-vs-label QA contact sheet
+  stylize_grid_comparison.jpg      Strength grid 0.35/0.45/0.55 at fg-keep 1.0 (shown above)
+  s045_fg100_manifest.json  s045_fg050_manifest.json   Frozen stylization params + per-frame seeds
+smoke_controlnet/vram_probe.json   GPU memory/speed probe of the diffusion pipeline
+requirements.txt                   Base ML environment (torch 2.5.1+cu121, ultralytics, ...)
+requirements-controlnet.txt        Diffusion pins: diffusers 0.40.0 / transformers 5.16.1 / OpenEXR
 .gitattributes
 .gitignore
 ```
@@ -310,16 +491,16 @@ Only the current baseline's dataset, weights, STL files, and results have explic
 
 ## Classes, geometry, and assembly
 
-| ID | Class | Original STL filename | Scene role | Assigned material |
+| ID | Class | Mesh file (this branch) | Scene role | Assigned material |
 |---:|---|---|---|---|
 | 0 | `Tube_Holder` | `TubeHolder.stl` | Main rack | Matte/plastic |
-| 1 | `Glass_Tube` | `Tube.stl` | One instance per occupied fitting hole | Principled glass |
+| 1 | `Glass_Tube` | `Falcon_Tube.stl` | Occupied holder holes + loose instances | Principled glass (opaque cap) |
 | 2 | `Slide_Holder` | `Slide_holder.stl` | Loose object on the bench | Principled glass |
 | 3 | `Eppendorf_Rack` | `eppendorf_tarto.stl` | Loose object on the bench | Principled glass |
 
-The STL filenames are retained for provenance; the class names are defined by `OBJECT_SPECS` in the [generator](blender/generate_synthetic_dataset.py). STL coordinates are interpreted as millimetres and scaled by **0.001** into Blender metres. Import applies the configured Y-up to Z-up transform, welds nearby vertices, recalculates normals, and recentres the meshes on the ground plane.
+The class names are defined by `OBJECT_SPECS` in the [generator](blender/generate_synthetic_dataset.py). STL coordinates are interpreted as millimetres and scaled by **0.001** into Blender metres. Import applies the configured Y-up to Z-up transform, welds nearby vertices, recalculates normals, and recentres the meshes on the ground plane. The frozen `dataset/` and `dataset_blenderproc/` were rendered with the legacy `Tube.stl` (skirted, ~116.4 mm); on this branch class 1 is the procedural **`Falcon_Tube.stl`** — an unskirted 50 ml conical tube (29 mm body, pointed conical tip over 21 mm, 34 mm ribbed screw cap, 114.5 mm overall) generated by [`scripts/generate_falcon_tube.py`](scripts/generate_falcon_tube.py) to match the real centrifuge tubes. Its cap is opaque plastic with a per-instance random colour; loose instances lie on their side (80%) or stand inverted on the cap (20%). See [Generator fixes](#generator-fixes-for-the-real-camera-failure-modes).
 
-`Tube.stl` is a capped, approximately **116.4 mm** long conical tube, not a generic thin glass cylinder. The generator orients the longest axis vertically and places the narrower end downward. It probes six holder orientations and chooses the one with the most fitting holes. For these meshes, the winning orientation is `-Y` in the orientation search, exposing **four holes** with approximately **14.7 mm radius**. The insertion portion of the tube has approximately **14.5 mm radius**, and its base rests on a hole floor about **9 mm** above the bench.
+The generator orients the holder so the face with the most fitting holes points up. For these meshes, the winning orientation is `-Y` in the orientation search, exposing **four holes** with approximately **14.7 mm radius**. The tube body has approximately **14.5 mm radius** and its tip rests on a hole floor about **9 mm** above the bench.
 
 Hole detection uses a 1 mm downward-ray grid, a highest sufficiently populated height band as the rack deck, four-connected depressed regions, and 24-direction horizontal radius probes. The fitting test is
 
@@ -329,7 +510,7 @@ r_{\mathrm{insert}}(d)=\max_{v_i:z_i\leq d+10^{-6}}\sqrt{x_i^2+y_i^2},
 r_{\mathrm{insert}}(d)\leq r_{\mathrm{hole}}+0.001.
 $$
 
-Here $d$ is insertion depth in metres. This tests the inserted body rather than rejecting a tube because its cap is wider than the hole. Each fitting hole is occupied independently with probability **0.75**, with a fallback ensuring at least one tube. Each loose object is included with probability **0.85**. Holder, tube, and loose-object yaw angles are randomized.
+Here $d$ is insertion depth in metres. This tests the inserted body rather than rejecting a tube because its cap is wider than the hole. In the frozen baseline datasets, each fitting hole was occupied independently with probability **0.75**, with a fallback ensuring at least one tube. **On this branch the fill probability is `HOLE_FILL_PROB = 0.5` with no forced minimum** (see [Generator fixes](#generator-fixes-for-the-real-camera-failure-modes)) — the ControlNet source dataset contains empty holes and fully empty racks. Each loose object is included with probability **0.85**. Holder, tube, and loose-object yaw angles are randomized.
 
 **Material realism caveat:** the two loose rack/stand meshes are deliberately rendered as glass in this baseline. Their assigned material is not evidence that the corresponding physical parts are transparent. Correct this in a future dataset if the real components are opaque plastic.
 
@@ -743,10 +924,12 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu121
 python -m pip install -r requirements.txt
+# optional, only for the ControlNet stylization stage on this branch:
+python -m pip install -r requirements-controlnet.txt
 python -c "import torch; print(torch.__version__); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0))"
 ```
 
-Use a CUDA-capable NVIDIA driver compatible with the installed PyTorch wheel. The final command should report CUDA availability and the selected GPU. `requirements.txt` pins the measured package versions; the CUDA wheel installation is intentionally shown separately.
+Use a CUDA-capable NVIDIA driver compatible with the installed PyTorch wheel. The final command should report CUDA availability and the selected GPU. `requirements.txt` pins the measured package versions; the CUDA wheel installation is intentionally shown separately. `requirements-controlnet.txt` adds the diffusion stack (diffusers 0.40.0, transformers 5.16.1, OpenEXR) pinned to the newest releases that still run on torch 2.5.1 — the file header explains the constraint chain. The four HF model snapshots are fetched on demand by `scripts/controlnet_setup.py --download`; they are not vendored in the repository.
 
 The complete dataset and trained weights are already included in the repository. Regeneration and retraining are optional if the objective is only to inspect or evaluate the published baseline.
 
@@ -816,14 +999,15 @@ The publication audit reports dataset integrity and asset sizes. `prepare_public
 
 ## Limitations and next experiments
 
-1. **No real-camera evaluation.** The next priority is a labeled, session-separated set from the intended robot camera, bench, and lighting. Synthetic holdout scores alone do not establish Sim2Real performance.
-2. **Shared assets and renderer.** All splits use the same four CAD models and procedural rendering system. This is not an unseen-geometry benchmark.
-3. **Limited sample size.** Each holdout contains only 100 images. Multiple instances within an image are correlated; the tables are point estimates, not statistical certification of a deployment failure rate.
+1. **One real benchmark session.** Real-camera transfer is measured on a single 282-frame session from `ABC-iRobotics/LabWare_Items` with auto-generated mask annotations (which the dataset card says "must be independently reviewed"). A labelled, session-separated set from the intended robot camera, bench, and lighting is still needed.
+2. **Shared assets and renderer.** All splits use the same four CAD models and procedural rendering system, and the stylized datasets all pass through one frozen diffusion configuration. This is not an unseen-geometry or unseen-appearance benchmark.
+3. **Limited sample size.** Each synthetic holdout contains only 100 images (the real set 282). Multiple instances within an image are correlated; the tables are point estimates, not statistical certification of a deployment failure rate.
 4. **Approximate annotations.** Vertex-sampled visibility, see-through rather than refracted visibility rays, frame-area filtering, and coordinate clamping at image borders can differ from a manually defined visible silhouette.
-5. **Materials must match the physical labware.** Glass assignments for the loose stand and rack, mesh wall thickness, caps, liquids, printing, and surface finish need comparison with actual objects.
-6. **Context bias and negatives.** The images always include the main holder, and assembly ensures at least one tube. This branch adds look-alike distractors and loose tubes next to the holder; empty scenes, empty racks, tubes far from the holder, and real clutter are still absent. The splitter intentionally validates a specific 1,000-image, nonempty-label snapshot; a broader dataset needs a versioned configuration rather than bypassing its checks.
-7. **OBB is not robot pose.** Visible-extent tube boxes can cover only the exposed part above an opaque holder. Camera calibration, depth/pose estimation, grasp-point validation, temporal stability, and supervised pick tests remain necessary.
-8. **Future robotics observability.** ROS2/UR16e integration and Prometheus/Grafana monitoring of inference latency, detection failures, and robot outcomes are planned work, not evaluated components of this release.
+5. **Geometry and materials vs. the physical labware.** `Falcon_Tube.stl` models a 50 ml tube; the real benchmark's tubes are ~15 ml conical tubes — a real size mismatch remains. Glass assignments for the loose stand and rack, mesh wall thickness, liquids, printing, and surface finish need comparison with actual objects.
+6. **fg-keep < 1.0 relaxes the label guarantee.** At fg-keep 0.5, half of each labelled object's pixels are diffusion output; if the img2img step drifts an edge inside the mask (rare under depth+edge conditioning at strength 0.45, but possible), the OBB no longer describes it exactly. fg-keep 1.0 exists for the strict guarantee; the sweep over fg-keep and strength values is incomplete — only 1.0 and 0.5 at strength 0.45 have published scores.
+7. **Context bias and negatives.** The images always include the main holder. Distractors and loose tubes appear only near the holder; empty scenes, tubes far from the holder, and real clutter are still absent. The splitter intentionally validates a specific 1,000-image, nonempty-label snapshot; a broader dataset needs a versioned configuration rather than bypassing its checks.
+8. **OBB is not robot pose.** Visible-extent tube boxes can cover only the exposed part above an opaque holder. Camera calibration, depth/pose estimation, grasp-point validation, temporal stability, and supervised pick tests remain necessary.
+9. **Future robotics observability.** ROS2/UR16e integration and Prometheus/Grafana monitoring of inference latency, detection failures, and robot outcomes are planned work, not evaluated components of this release.
 
 A controlled longer-training run may improve synthetic validation performance, but it should be judged against the frozen validation split and followed by an independently maintained final test set. More rendering volume alone is not evidence of improved transfer to the real laboratory.
 
@@ -832,12 +1016,16 @@ A controlled longer-training run may improve synthetic validation performance, b
 - The four source STL files are published unchanged under their original filenames. Original mesh authorship and license notices were not supplied with the local STL directory; no new mesh-license grant is asserted here.
 - A standalone project-wide `LICENSE` file was not present in the inherited repository. This README does not invent an MIT, CC0, or other blanket license for the code, CAD assets, dataset, or weights.
 - Ultralytics software and its pretrained/model-derived artifacts remain subject to the applicable [upstream licensing terms](https://github.com/ultralytics/ultralytics). Review those terms and obtain the necessary asset permissions for your intended use.
+- The diffusion models used by the ControlNet stage (Realistic Vision V5.1, `sd-vae-ft-mse`, and the two `lllyasviel` SD1.5 ControlNets) are downloaded from Hugging Face at pinned revisions and are **not vendored** in this repository. Stable Diffusion 1.5 derivatives are governed by the [CreativeML OpenRAIL-M license](https://huggingface.co/spaces/CompVis/stable-diffusion-license); review each model card for its terms before redistribution or commercial use.
 - The published raw metric records, split manifest, and checksums are the evidence for this baseline. Historical experiments elsewhere in the repository are not interchangeable with these artifacts.
 
 ### References and tools
 
 - [Blender](https://www.blender.org/) — rendering, mesh geometry, camera projection, and Principled materials.
 - [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) — pretrained Nano OBB model, training, inference, and evaluation.
+- [diffusers](https://github.com/huggingface/diffusers) — Multi-ControlNet img2img pipeline (SD1.5 + depth + canny).
+- [ControlNet (Zhang et al.)](https://arxiv.org/abs/2302.05543) — adding spatial conditioning controls to diffusion models.
+- [ABC-iRobotics/LabWare_Items](https://huggingface.co/datasets/ABC-iRobotics/LabWare_Items) — real UR16e labware benchmark (MIT license).
 - [GitHub large-file documentation](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github) — publication limits and storage guidance.
 
 **Project maintainer:** Danial Umer.
