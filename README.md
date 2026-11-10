@@ -1,39 +1,33 @@
-# UR16e Sim2Real Labware Detection
+# UR16e Sim2Real Labware Detection — `dev` branch
 
-**A reproducible synthetic-data baseline for oriented detection of transparent and matte laboratory objects.**
+**Development/scratch branch: the Sim2Real improvement roadmap and experimental run artifacts, built directly on the clean `main` baseline.**
 
-> **Branch Structure**
-> - **`main` (this branch):** Clean v2 CAD/STL procedural Blender baseline (`blender/generate_synthetic_dataset.py`), 4 STL labware meshes (`stl_models/`), 1,000-image 80/10/10 split (`dataset/`), trained YOLOv8n-OBB weights (`weights/`), and complete training/validation/test results and previews (`results/baseline/`).
-> - **`dev`:** Active development branch for upcoming Sim2Real improvements (loose glass tube placement next to holder, distractor/hindrance models, and Docker reproducibility).
-> - **`blenderproc`:** Dedicated branch for migrating the synthetic data generator to BlenderProc.
-> - **`legacy-v1`:** Archived v1 Blender HTTP Server pipeline, the 4,000-image `YOLO_Main_Dataset`, the 50-epoch `ur16e_main_run_4000-3` training run (`99.5% mAP@50`), and `predict-12` test predictions.
+> **Branch structure**
+> - **`dev` (this branch):** `main` **plus** `DEV_ROADMAP.md` (the Sim2Real task list) and `results/experiments/stl_synthetic_1000_30ep/` (an experimental in-sample run). Nothing here changes the published baseline; it tracks work that later landed on dedicated branches.
+> - **`main`:** Clean v2 CAD/STL baseline — generator, dataset, baseline weights, and full documentation (repeated below).
+> - **`blenderproc`:** Distractors, loose tubes, Falcon mesh, real-camera test set (48.91% real mAP50–95).
+> - **`controlnet`:** Diffusion stylization stage (56.56% real mAP50–95).
+> - **`legacy-v1`:** Archived v1 pipeline and 4,000-image dataset.
 
-This project connects STL geometry, procedural Blender rendering, geometry-derived oriented bounding-box (OBB) annotations, and YOLOv8n-OBB training. Its intended application is laboratory perception for a UR16e robot. The published experiment uses **1,000 synthetic images**, a fixed **800/100/100 train/validation/test split**, and a fresh **30-epoch** fine-tuning run from the original DOTA-pretrained `yolov8n-obb.pt`.
+## What lives on this branch
 
-| Published baseline | Result |
-|---|---:|
-| Held-out validation mAP50–95 | **89.79%** |
-| Held-out test mAP50–95 | **88.29%** |
-| Held-out test mAP50 | **97.16%** |
-| Image size | 640 × 640 RGB |
-| Training hardware | NVIDIA GeForce RTX 4050 Laptop GPU, 6 GB |
+### `DEV_ROADMAP.md` — task status
 
-> **Scope:** these are image-disjoint, held-out **synthetic** results, not real-camera or robot-grasp results. No real-world camera evaluation has been performed. An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
+| Roadmap item | Status | Where it landed |
+|---|---|---|
+| Loose `Glass_Tube` next to holder (upright + lying) | Done | `blenderproc` generator; 1–3 loose tubes per frame |
+| Distractor / hindrance meshes (unlabelled negatives) | Done | `blenderproc` — `stl_models/distractors/`, `dataset_blenderproc/` |
+| Docker reproducibility | **Open** | not yet implemented |
+| Real-camera evaluation | Done (added later) | `blenderproc` — `dataset/real_test/`, `eval_real_test.py` |
+| Diffusion/ControlNet realism | Done (added later) | `controlnet` — stylized datasets, fg-keep compositing |
 
-![Example held-out test prediction with oriented boxes and confidence scores](results/baseline/test/previews/000228.png)
+### `results/experiments/stl_synthetic_1000_30ep/` — experimental run
 
-## Contents
+A 30-epoch YOLOv8n-OBB run trained on **all 1,000 baseline images** (seed 0, deterministic, no holdout): **98.69% mAP50 / 92.69% mAP50–95 in-sample**. Published here with weights, curves, and validation batches for reference only — it is an *in-sample* score on its own training data, **not** a held-out result, and `scripts/train_yolo.py` on later branches refuses to initialize a fresh run from this checkpoint.
 
-- [Repository and published assets](#repository-and-published-assets)
-- [Classes, geometry, and assembly](#classes-geometry-and-assembly)
-- [Dataset and split integrity](#dataset-and-split-integrity)
-- [Implemented mathematical methods](#implemented-mathematical-methods)
-- [Training and evaluation protocol](#training-and-evaluation-protocol)
-- [Experimental results](#experimental-results)
-- [Qualitative results](#qualitative-results)
-- [Reproducibility](#reproducibility)
-- [Limitations and next experiments](#limitations-and-next-experiments)
-- [Provenance and licensing](#provenance-and-licensing)
+---
+
+*The remainder of this README is the inherited `main` baseline documentation; it applies unchanged to this branch.*
 
 ## Repository and published assets
 
