@@ -182,6 +182,10 @@ assets/*.jpg
 !/dataset/real_test/images/test/*.png
 !/dataset/real_test/labels/test/*.txt
 !/dataset/real_test/preview/test/*.png
+!/dataset/real_v2/
+/dataset/real_v2/*
+!/dataset/real_v2/data.yaml
+!/dataset/real_v2/real_v2_manifest.json
 /stl_models/*
 !/stl_models/TubeHolder.stl
 !/stl_models/Tube.stl
@@ -294,6 +298,8 @@ assets/*.jpg
 !/weights/controlnet/*.pt
 !/weights/controlnet_fg05/
 !/weights/controlnet_fg05/*.pt
+!/weights/controlnet_plain/
+!/weights/controlnet_plain/*.pt
 !/results/controlnet/
 /results/controlnet/**
 !/results/controlnet/**/
@@ -305,3 +311,12 @@ assets/*.jpg
 !/results/controlnet/**/*.csv
 !/results/controlnet/**/*.md
 !/results/controlnet/**/*.sha256
+!/results/real_v2/
+/results/real_v2/**
+!/results/real_v2/**/
+!/results/real_v2/summary.json
+!/results/real_v2/gt_contact_sheet.jpg
+!/results/real_v2/*/metrics.json
+# Seed-repeat runs: publish metrics/predictions JSON only, not per-frame overlays or val plots
+/results/controlnet/seed_repeats/*/predictions/
+/results/controlnet/seed_repeats/*/yolo_val/

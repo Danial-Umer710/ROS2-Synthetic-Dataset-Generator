@@ -66,11 +66,14 @@ def main():
     parser.add_argument("--skip-predict", action="store_true")
     args = parser.parse_args()
     dataset, weights, output = args.dataset.resolve(), args.weights.resolve(), args.output.resolve()
-    manifest_path = dataset / "real_test_manifest.json"
+    manifests = sorted(dataset.glob("*_manifest.json"))
     if not weights.is_file():
         raise FileNotFoundError(weights)
-    if not manifest_path.is_file():
-        raise FileNotFoundError(f"run scripts/prep_real_test_set.py first: {manifest_path}")
+    if len(manifests) != 1:
+        raise FileNotFoundError(
+            f"expected exactly one *_manifest.json under {dataset} "
+            f"(run scripts/prep_real_test_set.py or prep_real_v2_set.py first): {manifests}")
+    manifest_path = manifests[0]
     if output.exists():
         raise FileExistsError(f"Choose a new --output directory: {output}")
     if args.device != "cpu" and (not args.device.isdecimal() or not torch.cuda.is_available()):

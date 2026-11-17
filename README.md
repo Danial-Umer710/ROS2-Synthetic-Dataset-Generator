@@ -3,7 +3,7 @@
 **A diffusion-stylized synthetic-data pipeline for oriented detection of laboratory objects — narrowing the Sim2Real gap by repainting geometry-true Blender renders with a frozen ControlNet model.**
 
 > **Branch Structure**
-> - **`controlnet` (this branch):** The `blenderproc` pipeline **plus** the diffusion realism stage described in [ControlNet realism stage](#controlnet-realism-stage-this-branch): EXR geometry passes exported from Blender (`--export-passes`), Multi-ControlNet img2img stylization (`scripts/controlnet_stylize.py`), label-safe foreground compositing, two stylized 1,000-image datasets (`dataset_controlnet/`, `dataset_controlnet_fg05/`), two trained models (`weights/controlnet/`, `weights/controlnet_fg05/`), and their synthetic + real-camera evaluations (`results/controlnet/`). Best real-world score to date: **56.56% mAP50–95** on 282 real UR16e frames.
+> - **`controlnet` (this branch):** The `blenderproc` pipeline **plus** the diffusion realism stage described in [ControlNet realism stage](#controlnet-realism-stage-this-branch): EXR geometry passes exported from Blender (`--export-passes`), Multi-ControlNet img2img stylization (`scripts/controlnet_stylize.py`), label-safe foreground compositing, two stylized 1,000-image datasets (`dataset_controlnet/`, `dataset_controlnet_fg05/`), two trained models (`weights/controlnet/`, `weights/controlnet_fg05/`), and their synthetic + real-camera evaluations (`results/controlnet/`). Best real-world result to date: fg-keep 0.5 averages **52.01 ± 2.26% mAP50–95 over 10 training seeds** on 282 real UR16e frames (vs 48.32 ± 1.64% for the identical-scene un-stylized control; paired gain +3.70 ± 2.48 pts, 10/10 seed wins, p = 0.001).
 > - **`blenderproc`:** The `main` baseline **plus** distractor/hindrance objects and loose tubes (see [Distractor and loose-tube extension](#distractor-and-loose-tube-extension-inherited-from-blenderproc)), a second dataset (`dataset_blenderproc/`), a second model (`weights/blenderproc/`), and the real-camera Sim2Real benchmark (`dataset/real_test/`).
 > - **`main`:** Clean v2 CAD/STL procedural Blender baseline, 1,000-image 80/10/10 split (`dataset/`), trained YOLOv8n-OBB weights (`weights/`), complete results (`results/baseline/`).
 > - **`dev`:** Active development branch for upcoming Sim2Real improvements (Docker reproducibility, further scene variation).
@@ -17,10 +17,11 @@ This project connects STL geometry, procedural Blender rendering, geometry-deriv
 |---|---|---:|---:|
 | `weights/best.pt` | 800 clean synthetic | 49.38% | 37.28% |
 | `weights/blenderproc/best.pt` | 800 synthetic + distractors/loose tubes | 66.30% | 48.91% |
+| `weights/controlnet_plain/best.pt` | 800 un-stylized (geometry fixes only, no diffusion) — mean ± std over 10 seeds | 63.52 ± 2.20% | 48.32 ± 1.64% |
 | `weights/controlnet/best.pt` | 800 ControlNet-stylized, fg-keep 1.0 | 63.43% | 48.04% |
-| `weights/controlnet_fg05/best.pt` | 800 ControlNet-stylized, fg-keep 0.5 | **73.93%** | **56.56%** |
+| `weights/controlnet_fg05/best.pt` | 800 ControlNet-stylized, fg-keep 0.5 — mean ± std over 10 seeds | **68.40 ± 2.95%** | **52.01 ± 2.26%** |
 
-Keeping 50% of the original rendered pixels inside the labelled-object masks (`fg-keep 0.5`) beats both the fully stylized variant and the previous best model: **+7.65 mAP50–95 points** over the distractor model, and **+19.3 points** over the clean baseline. `Glass_Tube`, the class that drove most of the gap, recovers from 2.0% (baseline) / 29.3% (distractor) to **38.4%** real mAP50–95.
+Keeping 50% of the original rendered pixels inside the labelled-object masks (`fg-keep 0.5`) beats the identical-scene un-stylized control by **+3.70 ± 2.48 mAP50–95 points on average** over 10 paired training seeds — it won all 10 of 10 seeds (paired t-test t(9) = 4.71, p = 0.0011; Wilcoxon signed-rank, exact two-sided, p = 0.002). `Glass_Tube`, the class that drove most of the gap, is where the gain concentrates: **27.52 ± 4.51%** vs 19.50 ± 2.29% real mAP50–95 (+8.01 pts, 10/10 wins).
 
 > **Scope:** real-camera scores measure detection against auto-generated instance-mask ground truth on one benchmark session, not robot grasp success. Synthetic holdout scores (~88%) remain same-renderer-domain numbers. An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
 
@@ -39,6 +40,7 @@ Keeping 50% of the original rendered pixels inside the labelled-object masks (`f
   - [Step 4 — split, train, evaluate](#step-4--split-train-evaluate)
   - [Published stylized datasets](#published-stylized-datasets)
   - [Results](#results)
+  - [Capture-level real benchmark (`dataset/real_v2/`)](#capture-level-real-benchmark-datasetreal_v2)
   - [Reproducing this stage](#reproducing-this-stage)
 - [Distractor and loose-tube extension (inherited from `blenderproc`)](#distractor-and-loose-tube-extension-inherited-from-blenderproc)
 - [Repository and published assets](#repository-and-published-assets)
@@ -128,13 +130,14 @@ Because the mask comes from the object-index pass, it matches the visible-silhou
 
 ### Step 4 — split, train, evaluate
 
-The stylized images plus the **unchanged** source labels form a standard YOLO dataset. The splitter was run with seed 42, so `dataset_controlnet/` and `dataset_controlnet_fg05/` have **the same train/val/test stem membership** as `dataset_blenderproc/` (the underlying scenes differ — the source was re-rendered with the current generator, i.e. Falcon tubes and ~50% hole fill). Both models then trained with the *unchanged* recipe: fresh `yolov8n-obb.pt`, 800 images, 30 epochs, 640/batch 16, seed 42, deterministic, validation-selected `best.pt`.
+The stylized images plus the **unchanged** source labels form a standard YOLO dataset. The splitter was run with seed 42, so `dataset_controlnet/` and `dataset_controlnet_fg05/` have **the same train/val/test stem membership** as `dataset_blenderproc/` (the underlying scenes differ — the source was re-rendered with the current generator, i.e. Falcon tubes and ~50% hole fill). Both models then trained with the *unchanged* recipe: fresh `yolov8n-obb.pt`, 800 images, 30 epochs, 640/batch 16, deterministic, validation-selected `best.pt`. `scripts/train_yolo.py` accepts `--train-seed` (default 42; the dataset split seed stays fixed at 42) — the published fg-keep 0.5 and plain-control models are their seed-42 runs, and seeds 0–8 repeats are under `runs/obb/UR16e_Labware_Detection/*_seed{0..8}`.
 
-Runs: `controlnet_s045_800_30ep` → `weights/controlnet/`, `controlnet_s045_fg05_800_30ep` → `weights/controlnet_fg05/`. Selected checkpoint SHA256:
+Runs: `controlnet_s045_800_30ep` → `weights/controlnet/`, `controlnet_s045_fg05_800_30ep` → `weights/controlnet_fg05/`, plus the un-stylized control `controlnet_src_plain_800_30ep` → `weights/controlnet_plain/` (same recipe on the same source render *without* stylization; its dataset `dataset_controlnet_plain/` is kept local, not published). Selected checkpoint SHA256:
 
 ```text
-weights/controlnet/best.pt      75ab3144d60b2fad8e1caf7c58d09a9c537eddfc9cd0e624383f12cd042ccaff
-weights/controlnet_fg05/best.pt 6f2b6ef144fe712daf0b0b2b0a39e4c13b59f2b7d40aa3a390d9d9f2ac331b39
+weights/controlnet/best.pt       75ab3144d60b2fad8e1caf7c58d09a9c537eddfc9cd0e624383f12cd042ccaff
+weights/controlnet_fg05/best.pt  6f2b6ef144fe712daf0b0b2b0a39e4c13b59f2b7d40aa3a390d9d9f2ac331b39
+weights/controlnet_plain/best.pt 4129f19ecd577be9befeaf3af6f64da37d1509f9458f38d50b7b9b98515f85a6
 ```
 
 ### Published stylized datasets
@@ -154,27 +157,117 @@ All four models were evaluated on the **same real test set** ([`dataset/real_tes
 |---|---:|---:|---:|---:|---|
 | Baseline `weights/best.pt` | 54.02 | 46.44 | 49.38 | 37.28 | [json](results/baseline/real_world_eval/metrics.json) |
 | Distractor `weights/blenderproc/best.pt` | 65.67 | 61.42 | 66.30 | 48.91 | [json](results/blenderproc/real_world_eval/metrics.json) |
+| Un-stylized control `weights/controlnet_plain/best.pt` — mean over 10 seeds | — | — | 63.52 ± 2.20 | 48.32 ± 1.64 | [summary](results/controlnet/seed_repeats/summary.json) |
 | ControlNet fg-keep 1.0 | 62.96 | 62.70 | 63.43 | 48.04 | [json](results/controlnet/real_world_eval/metrics.json) |
-| **ControlNet fg-keep 0.5** | **73.46** | **65.64** | **73.93** | **56.56** | [json](results/controlnet/real_world_eval_fg05/metrics.json) |
+| **ControlNet fg-keep 0.5** — mean over 10 seeds | — | — | **68.40 ± 2.95** | **52.01 ± 2.26** | [summary](results/controlnet/seed_repeats/summary.json) |
 
-Per-class real mAP50–95 for the two ControlNet models:
+Per-seed real mAP50–95 (plain and fg-keep 0.5 trained on **identical scenes, labels and split** — only the training seed and the foreground pixel blend differ). fg-keep 0.5 won **10/10 seeds**:
 
-| Class | fg-keep 1.0 | fg-keep 0.5 |
-|---|---:|---:|
-| Tube_Holder | 78.51 | **81.72** |
-| Glass_Tube | 13.35 | **38.39** |
-| Slide_Holder | 44.73 | **45.41** |
-| Eppendorf_Rack | 55.55 | **60.71** |
+| Training seed | plain mAP50–95 | fg-keep 0.5 mAP50–95 | fg05 − plain |
+|---|---:|---:|---:|
+| 0 | 46.17 | 48.68 | +2.51 |
+| 1 | 49.36 | 50.91 | +1.55 |
+| 2 | 51.04 | 53.81 | +2.77 |
+| 3 | 47.59 | 49.95 | +2.36 |
+| 4 | 49.54 | 50.74 | +1.20 |
+| 5 | 49.31 | 53.66 | +4.35 |
+| 6 | 49.10 | 51.14 | +2.04 |
+| 7 | 47.86 | 52.61 | +4.74 |
+| 8 | 45.75 | 52.08 | +6.33 |
+| 42 | 47.44 | 56.56 | +9.12 |
+| **mean ± std** | **48.32 ± 1.64** | **52.01 ± 2.26** | **+3.70 ± 2.48** |
+
+Paired tests on the 10 differences: paired t-test **t(9) = 4.71, p = 0.0011**; Wilcoxon signed-rank, exact two-sided, **p = 0.002** (all 10 differences positive). Per-class real mAP50–95, mean ± std over the same 10 seeds (fg-keep 1.0 is a single seed-42 run):
+
+| Class | plain (no diffusion) | fg-keep 1.0 | fg-keep 0.5 | fg05 − plain (wins) |
+|---|---:|---:|---:|---:|
+| Tube_Holder | 77.46 ± 1.44 | 78.51 | **79.27 ± 1.40** | +1.81 (8/10) |
+| Glass_Tube | 19.50 ± 2.29 | 13.35 | **27.52 ± 4.51** | +8.01 (10/10) |
+| Slide_Holder | 40.86 ± 4.32 | 44.73 | **43.08 ± 3.87** | +2.23 (6/10) |
+| Eppendorf_Rack | 55.44 ± 2.08 | 55.55 | **58.18 ± 1.98** | +2.74 (8/10) |
 
 On their **own stylized test splits** (same-domain holdouts, 100 images each): fg-keep 1.0 model **88.54%** mAP50–95, fg-keep 0.5 model **87.28%** ([fg1.0 metrics](results/controlnet/stylized_test_eval/metrics.json), [fg0.5 metrics](results/controlnet/stylized_test_eval_fg05/metrics.json)) — in line with the ~88% of the earlier synthetic holdouts.
 
 Findings:
 
-1. **Full stylization alone did not beat the distractor model.** fg-keep 1.0 scores 48.04% real mAP50–95 (vs 48.91%): photorealistic backgrounds help `Tube_Holder` (+3.5 pts) but the untouched-render foreground keeps `Glass_Tube` at 13.35% — the domain gap on the *object itself* is what was hurting.
-2. **Blending diffusion into the foreground is the win.** fg-keep 0.5 lifts `Glass_Tube` to 38.39% (+25 pts over fg-keep 1.0, +9.1 over the distractor model) and every other class too, for +7.65 pts overall. Half-rendered texture on the object is apparently close enough to the Falcon-tube appearance that the detector finally transfers — while still differing enough from both domains to avoid over-fitting either.
-3. **`Slide_Holder` recall (0.42) and `Glass_Tube` precision (0.48) remain the weakest points**; residual causes include the 15 ml vs 50 ml real/synthetic tube size mismatch and unannotated real clutter counted as false positives.
+1. **The gain is attributable to the diffusion blend, not the geometry fixes — and it is statistically significant.** The un-stylized control — trained on the *same* source render (Falcon tubes, ~50% hole fill, loose tubes, distractors), identical labels and identical split — averages 48.32 ± 1.64% real mAP50–95 over 10 seeds vs fg-keep 0.5's 52.01 ± 2.26%: a paired gain of **+3.70 ± 2.48 pts**, with fg-keep 0.5 winning **all 10 of 10 seeds** (paired t(9) = 4.71, p = 0.0011; Wilcoxon signed-rank exact two-sided, p = 0.002). The previously reported +9.1 pts was seed 42, fg-keep 0.5's most favourable seed.
+2. **The gain concentrates on `Glass_Tube`.** +8.01 ± 4.92 pts and 10/10 seed wins (paired p = 0.0006 / Wilcoxon 0.002) — the only class where every seed improved. `Tube_Holder` (+1.81, 8/10) and `Eppendorf_Rack` (+2.74, 8/10) are also significant; `Slide_Holder` (+2.23 ± 3.98, 6/10, p ≈ 0.1) is not.
+3. **Full stylization alone did not beat the distractor model.** fg-keep 1.0 scores 48.04% real mAP50–95 (single seed): photorealistic backgrounds alone don't transfer — the domain gap on the *object itself* (`Glass_Tube` 13.35%) is what was hurting.
+4. **Training-seed variance is comparable to the treatment effect.** Within each group the 10 seeds span ~5–8 pts of mAP50–95; the unpaired ranges overlap (plain max 51.04 > fg05 min 48.68) even though the paired analysis is unambiguous — multi-seed paired reporting is therefore essential for any further fg-keep/strength comparisons.
+5. **`Slide_Holder` recall (0.42) and `Glass_Tube` precision (0.48) remain the weakest points**; residual causes include unlabelled real objects — the 15 ml tubes in the real scenes are present but not annotated, so detections on them count as false positives (the labelled real tubes are 50 ml Falcon tubes, the size `Falcon_Tube.stl` models) — and other unannotated clutter.
+
+*Caveat: baseline, distractor and fg-keep 1.0 models are still **single seed-42 runs** — only the plain control and fg-keep 0.5 have multi-seed statistics. Full seed-repeat data: [`results/controlnet/seed_repeats/summary.json`](results/controlnet/seed_repeats/summary.json).*
 
 Per-frame prediction overlays for all 282 real frames are published under [`results/controlnet/real_world_eval*/predictions/`](results/controlnet/).
+
+### Capture-level real benchmark (`dataset/real_v2/`)
+
+The 282-frame `dataset/real_test/` is the official *test* split of `ABC-iRobotics/LabWare_Items`, but the official splits are drawn frame-by-frame: all ten captures (`dataset_id` `0000`–`0009`, 250 frames each) contribute frames to train, validation **and** test. For any experiment that trains on real frames, a held-out set must therefore be separated **by capture**. [`scripts/prep_real_v2_set.py`](scripts/prep_real_v2_set.py) pools all three official splits (2,500 frames), groups them by `dataset_id`, and applies the supervisor's rule:
+
+> Keep only captures annotated with exactly **1 `TubeHolder`, 2 `Tube`, 2 `Slide_holder`, 1 `eppendorf_tarto`**.
+
+The rule is applied to each capture's modal per-frame annotation composition (a few frames per capture lose one instance to occlusion or leaving the field of view). Seven captures pass; `0000`, `0002` and `0008` are dropped because they contain a single annotated `Tube`. The script stops without writing anything if the kept set differs from the expected one. Every frame of each kept capture is exported with the same mask → `cv2.minAreaRect` conversion and class mapping as `prep_real_test_set.py`, and no capture appears in more than one split (asserted):
+
+| Split | Captures | Images | Tube_Holder | Glass_Tube | Slide_Holder | Eppendorf_Rack |
+|---|---|---:|---:|---:|---:|---:|
+| train | `0001`, `0003`, `0004`, `0005` | 1,000 | 993 | 1,977 | 1,997 | 999 |
+| val | `0006` | 250 | 250 | 491 | 500 | 250 |
+| test | `0007`, `0009` | 500 | 500 | 994 | 996 | 500 |
+
+Only [`data.yaml`](dataset/real_v2/data.yaml) and [`real_v2_manifest.json`](dataset/real_v2/real_v2_manifest.json) (capture report, capture → split assignment, per-frame instances and image SHA256) are published; the ~1.6 GiB of images and labels are rebuilt from the Hugging Face cache by the script. Ground-truth overlays, three frames per capture: [`results/real_v2/gt_contact_sheet.jpg`](results/real_v2/gt_contact_sheet.jpg). `dataset/real_test/` is unchanged and remains the reference for the numbers above.
+
+```powershell
+python scripts/prep_real_v2_set.py          # refuses to write into an existing dataset/real_v2
+python scripts/eval_real_test.py --weights weights/controlnet_fg05/best.pt --dataset dataset/real_v2 --output results/real_v2/<new dir>
+```
+
+**All 23 existing checkpoints on the `real_v2` test captures** (500 frames, 2,990 instances; imgsz 640, conf 0.001, NMS IoU 0.7; per-class columns are mAP50–95). None of these models saw a real frame in training, so this is a pure re-evaluation; metrics per checkpoint are under `results/real_v2/<model>/metrics.json` and aggregated in [`results/real_v2/summary.json`](results/real_v2/summary.json).
+
+| Checkpoint | Training seed | mAP50 | mAP50–95 | Tube_Holder | Glass_Tube | Slide_Holder | Eppendorf_Rack |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Baseline `weights/best.pt` | 42 | 51.97 | 40.43 | 71.80 | 0.25 | 37.37 | 52.31 |
+| Distractor `weights/blenderproc/best.pt` | 42 | 69.49 | 52.81 | 74.45 | 27.04 | 50.51 | 59.23 |
+| ControlNet fg-keep 1.0 `weights/controlnet/best.pt` | 42 | 63.92 | 49.56 | 81.53 | 9.76 | 54.22 | 52.74 |
+| Un-stylized control (plain) | 0 | 61.22 | 47.70 | 78.92 | 19.24 | 45.08 | 47.55 |
+| Un-stylized control (plain) | 1 | 66.77 | 52.63 | 81.74 | 18.77 | 56.00 | 54.02 |
+| Un-stylized control (plain) | 2 | 66.71 | 52.50 | 81.84 | 19.24 | 57.22 | 51.69 |
+| Un-stylized control (plain) | 3 | 65.04 | 50.54 | 81.17 | 18.82 | 48.50 | 53.67 |
+| Un-stylized control (plain) | 4 | 69.44 | 54.59 | 84.06 | 18.87 | 58.70 | 56.73 |
+| Un-stylized control (plain) | 5 | 67.21 | 52.23 | 81.17 | 18.61 | 54.87 | 54.28 |
+| Un-stylized control (plain) | 6 | 66.72 | 52.37 | 81.75 | 18.50 | 51.98 | 57.26 |
+| Un-stylized control (plain) | 7 | 65.75 | 51.16 | 83.68 | 14.89 | 51.22 | 54.86 |
+| Un-stylized control (plain) | 8 | 65.74 | 50.45 | 79.84 | 19.35 | 45.45 | 57.16 |
+| Un-stylized control (plain) | 42 | 63.30 | 49.48 | 80.02 | 16.42 | 52.36 | 49.12 |
+| **Un-stylized control (plain) — mean ± std, 10 seeds** | — | **65.79 ± 2.25** | **51.37 ± 1.93** | 81.42 ± 1.61 | 18.27 ± 1.45 | 52.14 ± 4.71 | 53.63 ± 3.31 |
+| ControlNet fg-keep 0.5 | 0 | 65.08 | 50.44 | 82.48 | 18.86 | 51.27 | 49.17 |
+| ControlNet fg-keep 0.5 | 1 | 68.50 | 53.44 | 83.83 | 22.18 | 53.65 | 54.10 |
+| ControlNet fg-keep 0.5 | 2 | 71.06 | 55.79 | 85.65 | 26.69 | 57.06 | 53.74 |
+| ControlNet fg-keep 0.5 | 3 | 66.93 | 52.88 | 82.97 | 23.27 | 45.94 | 59.35 |
+| ControlNet fg-keep 0.5 | 4 | 68.01 | 53.31 | 85.58 | 19.28 | 52.73 | 55.65 |
+| ControlNet fg-keep 0.5 | 5 | 71.64 | 56.43 | 83.92 | 24.57 | 60.10 | 57.14 |
+| ControlNet fg-keep 0.5 | 6 | 66.43 | 51.81 | 85.74 | 22.10 | 50.97 | 48.42 |
+| ControlNet fg-keep 0.5 | 7 | 69.01 | 54.13 | 82.67 | 22.40 | 52.26 | 59.18 |
+| ControlNet fg-keep 0.5 | 8 | 71.90 | 55.99 | 84.05 | 22.45 | 56.33 | 61.13 |
+| ControlNet fg-keep 0.5 | 42 | 77.11 | 60.70 | 86.31 | 35.23 | 59.24 | 62.01 |
+| **ControlNet fg-keep 0.5 — mean ± std, 10 seeds** | — | **69.57 ± 3.49** | **54.49 ± 2.89** | 84.32 ± 1.40 | 23.70 ± 4.64 | 53.95 ± 4.29 | 55.99 ± 4.69 |
+
+**Paired plain vs fg-keep 0.5 analysis on `real_v2` test** (same 10 training seeds, mean ± sample std):
+
+| Metric (mAP50–95 unless noted) | plain | fg-keep 0.5 | paired diff | fg05 wins | paired t-test (two-sided) | Wilcoxon (exact, two-sided) |
+|---|---:|---:|---:|---:|---:|---:|
+| **Overall** | 51.37 ± 1.93 | 54.49 ± 2.89 | +3.13 ± 3.52 | 8/10 | t(9) = 2.81, p = 0.0205 | W = 4, p = 0.0137 |
+| Overall mAP50 | 65.79 ± 2.25 | 69.57 ± 3.49 | +3.78 ± 4.20 | 8/10 | t(9) = 2.85, p = 0.0192 | W = 3, p = 0.0098 |
+| Tube_Holder | 81.42 ± 1.61 | 84.32 ± 1.40 | +2.90 ± 1.96 | 9/10 | t(9) = 4.67, p = 0.0012 | W = 1, p = 0.0039 |
+| Glass_Tube | 18.27 ± 1.45 | 23.70 ± 4.64 | +5.43 ± 5.38 | 9/10 | t(9) = 3.19, p = 0.0110 | W = 1, p = 0.0039 |
+| Slide_Holder | 52.14 ± 4.71 | 53.95 ± 4.29 | +1.82 ± 5.25 | 5/10 | t(9) = 1.09, p = 0.3023 | W = 19, p = 0.4316 |
+| Eppendorf_Rack | 53.63 ± 3.31 | 55.99 ± 4.69 | +2.36 ± 5.49 | 8/10 | t(9) = 1.36, p = 0.2081 | W = 11, p = 0.1055 |
+
+Reading:
+
+- **The diffusion gain replicates on held-out captures, but more weakly.** fg-keep 0.5 beats the un-stylized control by **+3.13 ± 3.52 mAP50–95 points**, winning **8 of 10 seeds** (seeds 4 and 6 lose by 1.28 and 0.56 points); paired t(9) = 2.81, p = 0.021, Wilcoxon exact two-sided p = 0.014. On the 282-frame set the same checkpoints gave +3.70 ± 2.48 with 10/10 wins.
+- **Per class**, `Tube_Holder` and `Glass_Tube` are significant (9/10 wins each); `Slide_Holder` (5/10) and `Eppendorf_Rack` (8/10, p ≈ 0.1–0.2) are not. `Glass_Tube` remains the weakest class for every model (at most 35.2% mAP50–95).
+- **Seed 42 is again fg-keep 0.5's most favourable seed** (60.70%, +11.22 over its plain pair); the 10-seed means are the numbers to quote.
+- **The generator change is not shown to help on real data.** The distractor model (`Tube.stl`, always-filled holes) scores 52.81% here, inside the un-stylized control's seed range (47.70–54.59%, mean 51.37%) even though the control was rendered with `Falcon_Tube.stl` and ~50% hole fill. The distractor, baseline and fg-keep 1.0 rows are **single seed-42 runs**, so their differences from each other and from the multi-seed means are not tested.
 
 ### Reproducing this stage
 
@@ -377,11 +470,11 @@ The repository's synthetic holdouts cannot show real-world transfer, so both che
 | Baseline `weights/best.pt` | 54.02 | 46.44 | 49.38 | 37.28 | 88.29 (clean test) |
 | Distractor `weights/blenderproc/best.pt` | 65.67 | 61.42 | 66.30 | 48.91 | 87.92 (distractor test) |
 | ControlNet fg-keep 1.0 `weights/controlnet/best.pt` | 62.96 | 62.70 | 63.43 | 48.04 | 88.54 (stylized test) |
-| **ControlNet fg-keep 0.5 `weights/controlnet_fg05/best.pt`** | **73.46** | **65.64** | **73.93** | **56.56** | 87.28 (stylized test) |
+| **ControlNet fg-keep 0.5 `weights/controlnet_fg05/best.pt`** — mean over 10 seeds | — | — | **68.40 ± 2.95** | **52.01 ± 2.26** | 87.28 (stylized test) |
 
 Full numbers, per-class tables, and the report: [`results/baseline/real_world_eval/sim2real_report.json`](results/baseline/real_world_eval/sim2real_report.json) and [`SIM2REAL_REPORT.md`](results/baseline/real_world_eval/SIM2REAL_REPORT.md); the ControlNet-stage evaluations are under [`results/controlnet/real_world_eval*/`](results/controlnet/). "Own synthetic test" above refers to each model's same-domain holdout — it is not comparable across rows.
 
-The Sim2Real gap is large but structured: `Glass_Tube` accounts for most of it — the real `Tube` items are Falcon-style conical tubes lying loose (the baseline only ever saw thin glass tubes upright inside the holder), and its real `Glass_Tube` mAP50 is 4.8%. The distractor model's loose-tube training lifts this to 43.4% and gains 11.6 mAP50–95 points overall. Remaining error modes: the distractor model hallucinates `Glass_Tube` inside the real rack's empty holes (in synthetic scenes holes always contained tubes), the baseline labels real loose tubes `Slide_Holder`, and unannotated scene clutter counts as false positives. The ControlNet stage on this branch takes these two models' numbers as its reference and improves them to **56.56%** real mAP50–95 — see [Results](#results).
+The Sim2Real gap is large but structured: `Glass_Tube` accounts for most of it — the real `Tube` items are Falcon-style conical tubes lying loose (the baseline only ever saw thin glass tubes upright inside the holder), and its real `Glass_Tube` mAP50 is 4.8%. The distractor model's loose-tube training lifts this to 43.4% and gains 11.6 mAP50–95 points overall. Remaining error modes: the distractor model hallucinates `Glass_Tube` inside the real rack's empty holes (in synthetic scenes holes always contained tubes), the baseline labels real loose tubes `Slide_Holder`, and unannotated scene clutter counts as false positives. The ControlNet stage on this branch takes these two models' numbers as its reference and improves them to **52.01 ± 2.26%** real mAP50–95 (10-seed mean; seed-42 best single run 56.56%) — see [Results](#results).
 
 ```powershell
 # rebuild the real test set (HF cache reused), then evaluate a checkpoint on it
@@ -447,7 +540,8 @@ scripts/
   train_yolo.py                      Fresh training, validation, test previews
   evaluate_yolo.py                   Frozen-checkpoint validation/test evaluation
   prep_real_test_set.py              Build dataset/real_test from HF LabWare_Items
-  eval_real_test.py                  Frozen-checkpoint evaluation on the real test set
+  eval_real_test.py                  Frozen-checkpoint evaluation on the real test set (--dataset dataset/real_v2 for the capture-level set)
+  prep_real_v2_set.py                Build capture-level dataset/real_v2 (train/val/test by capture) from HF LabWare_Items
   generate_falcon_tube.py            Procedural Falcon_Tube.stl generator
   make_contact_sheet.py              GT-OBB overlay contact sheets for render QA
   visualize_obb_labels.py            Ground-truth label overlays
@@ -459,11 +553,13 @@ weights/
   best.pt  last.pt                   Baseline model (main)
   blenderproc/best.pt  last.pt       Distractor model (blenderproc)
   controlnet/best.pt  last.pt        Stylized fg-keep 1.0 model (this branch)
-  controlnet_fg05/best.pt  last.pt   Stylized fg-keep 0.5 model (this branch, best real score)
+  controlnet_fg05/best.pt  last.pt   Stylized fg-keep 0.5 model, seed 42 (this branch, best real score)
+  controlnet_plain/best.pt  last.pt  Un-stylized control, seed 42 (this branch)
 dataset/
   data.yaml  split_manifest.json
   images/{train,val,test}/  labels/{train,val,test}/     800 / 100 / 100
   real_test/                       282 real UR16e frames + manifest (evaluation only)
+  real_v2/                         data.yaml + real_v2_manifest.json; 1,750 capture-split frames rebuilt by prep_real_v2_set.py
 dataset_blenderproc/               Distractor + loose-tube dataset, same layout + scene/
 dataset_controlnet/                Stylized s=0.45 fg-keep 1.0 dataset (this branch)
 dataset_controlnet_fg05/           Stylized s=0.45 fg-keep 0.5 dataset (this branch)
@@ -472,7 +568,9 @@ results/blenderproc/               Distractor model results + cross_evaluation +
 results/controlnet/                This branch:
   training/  training_fg05/        Curves, held-out val, test previews for both stylized models
   stylized_test_eval{,_fg05}/      Same-domain stylized holdout evaluations
-  real_world_eval{,_fg05}/         Real-test metrics + all 282 prediction overlays
+  real_world_eval{,_fg05,_plain}/  Real-test metrics + all 282 prediction overlays
+  seed_repeats/                    Seeds 0-8 of plain and fg-keep 0.5 on real_test + 10-seed summary.json
+results/real_v2/                   All 23 checkpoints on the real_v2 test captures: metrics.json each, summary.json, gt_contact_sheet.jpg
   smoke_passes_grid.jpg + .json    Pass-vs-label QA contact sheet
   stylize_grid_comparison.jpg      Strength grid 0.35/0.45/0.55 at fg-keep 1.0 (shown above)
   s045_fg100_manifest.json  s045_fg050_manifest.json   Frozen stylization params + per-frame seeds
@@ -999,11 +1097,11 @@ The publication audit reports dataset integrity and asset sizes. `prepare_public
 
 ## Limitations and next experiments
 
-1. **One real benchmark session.** Real-camera transfer is measured on a single 282-frame session from `ABC-iRobotics/LabWare_Items` with auto-generated mask annotations (which the dataset card says "must be independently reviewed"). A labelled, session-separated set from the intended robot camera, bench, and lighting is still needed.
+1. **One real data source.** Real-camera transfer is measured on `ABC-iRobotics/LabWare_Items` only — the 282-frame official test split (whose frames come from the same ten captures as the official train split) and the capture-level `dataset/real_v2/` test split (two held-out captures, 500 frames) — with auto-generated mask annotations (which the dataset card says "must be independently reviewed"). A labelled, session-separated set from the intended robot camera, bench, and lighting is still needed.
 2. **Shared assets and renderer.** All splits use the same four CAD models and procedural rendering system, and the stylized datasets all pass through one frozen diffusion configuration. This is not an unseen-geometry or unseen-appearance benchmark.
 3. **Limited sample size.** Each synthetic holdout contains only 100 images (the real set 282). Multiple instances within an image are correlated; the tables are point estimates, not statistical certification of a deployment failure rate.
 4. **Approximate annotations.** Vertex-sampled visibility, see-through rather than refracted visibility rays, frame-area filtering, and coordinate clamping at image borders can differ from a manually defined visible silhouette.
-5. **Geometry and materials vs. the physical labware.** `Falcon_Tube.stl` models a 50 ml tube; the real benchmark's tubes are ~15 ml conical tubes — a real size mismatch remains. Glass assignments for the loose stand and rack, mesh wall thickness, liquids, printing, and surface finish need comparison with actual objects.
+5. **Geometry and materials vs. the physical labware.** `Falcon_Tube.stl` models a 50 ml tube, and the *labelled* real tubes are 50 ml Falcon tubes, so there is no size mismatch for the annotated class. The real scenes also contain 15 ml tubes that are present but **unlabelled**: any detection on them is scored as a false positive, and no synthetic negative models them. The Falcon/empty-hole generator change itself is **not shown to improve real performance**: the distractor model (older `Tube.stl`, always-filled holes; a single seed-42 run) scores 52.81% mAP50–95 on the `real_v2` test captures, against 51.37 ± 1.93% for the 10-seed un-stylized control rendered with the current generator. Glass assignments for the loose stand and rack, mesh wall thickness, liquids, printing, and surface finish need comparison with actual objects.
 6. **fg-keep < 1.0 relaxes the label guarantee.** At fg-keep 0.5, half of each labelled object's pixels are diffusion output; if the img2img step drifts an edge inside the mask (rare under depth+edge conditioning at strength 0.45, but possible), the OBB no longer describes it exactly. fg-keep 1.0 exists for the strict guarantee; the sweep over fg-keep and strength values is incomplete — only 1.0 and 0.5 at strength 0.45 have published scores.
 7. **Context bias and negatives.** The images always include the main holder. Distractors and loose tubes appear only near the holder; empty scenes, tubes far from the holder, and real clutter are still absent. The splitter intentionally validates a specific 1,000-image, nonempty-label snapshot; a broader dataset needs a versioned configuration rather than bypassing its checks.
 8. **OBB is not robot pose.** Visible-extent tube boxes can cover only the exposed part above an opaque holder. Camera calibration, depth/pose estimation, grasp-point validation, temporal stability, and supervised pick tests remain necessary.

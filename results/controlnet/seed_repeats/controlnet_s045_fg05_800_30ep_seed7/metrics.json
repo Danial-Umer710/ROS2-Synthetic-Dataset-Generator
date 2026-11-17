@@ -1,0 +1,72 @@
+{
+  "dataset": "ABC-iRobotics/LabWare_Items instance_segmentation test split (real UR16e camera)",
+  "split": "test",
+  "images": 282,
+  "instances": 1592,
+  "checkpoint": "D:\\Projects\\UR_Robotics_Project\\runs\\obb\\UR16e_Labware_Detection\\controlnet_s045_fg05_800_30ep_seed7\\weights\\best.pt",
+  "checkpoint_sha256": "62e850b1a047bf79153d09b4bd29a70f1989aeb8fc569c66be69b610ada640b1",
+  "manifest_sha256": "79bdc9507347b62edca3720fd7897c17c016a1b78c0396a939e64ff2bfb130fd",
+  "prediction_overlays": 282,
+  "configuration": {
+    "imgsz": 640,
+    "batch": 16,
+    "device": "0",
+    "workers": 0,
+    "confidence_cutoff": 0.001,
+    "nms_iou": 0.7,
+    "half": false,
+    "ultralytics": "8.4.127",
+    "torch": "2.5.1+cu121",
+    "native_resolution": "1280x800 letterboxed to imgsz"
+  },
+  "overall": {
+    "precision": 0.6560696494678875,
+    "recall": 0.6635160397741826,
+    "mAP50": 0.6924991998369789,
+    "mAP50-95": 0.5260695369885817
+  },
+  "per_class": [
+    {
+      "class_id": 0,
+      "name": "Tube_Holder",
+      "instances": 282,
+      "precision": 0.8130302570326091,
+      "recall": 0.8900709219858156,
+      "mAP50": 0.9315553211503063,
+      "mAP50-95": 0.7753757874301456
+    },
+    {
+      "class_id": 1,
+      "name": "Glass_Tube",
+      "instances": 468,
+      "precision": 0.3473540444962761,
+      "recall": 0.5555555555555556,
+      "mAP50": 0.3976461047974705,
+      "mAP50-95": 0.25973302521740566
+    },
+    {
+      "class_id": 2,
+      "name": "Slide_Holder",
+      "instances": 560,
+      "precision": 0.7368550114377205,
+      "recall": 0.4850334262362103,
+      "mAP50": 0.6718816541373916,
+      "mAP50-95": 0.4606356495368075
+    },
+    {
+      "class_id": 3,
+      "name": "Eppendorf_Rack",
+      "instances": 282,
+      "precision": 0.727039284904944,
+      "recall": 0.723404255319149,
+      "mAP50": 0.7689137192627475,
+      "mAP50-95": 0.6085336857699682
+    }
+  ],
+  "speed_ms_per_image": {
+    "preprocess": 0.29063297871992333,
+    "inference": 2.276015248295565,
+    "loss": 0.0010769502986354607,
+    "postprocess": 3.698632624081843
+  }
+}

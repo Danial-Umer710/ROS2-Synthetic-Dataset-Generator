@@ -1,0 +1,72 @@
+{
+  "dataset": "ABC-iRobotics/LabWare_Items instance_segmentation test split (real UR16e camera)",
+  "split": "test",
+  "images": 500,
+  "instances": 2990,
+  "checkpoint": "D:\\Projects\\UR_Robotics_Project\\runs\\obb\\UR16e_Labware_Detection\\controlnet_src_plain_800_30ep_seed2\\weights\\best.pt",
+  "checkpoint_sha256": "47595b1fc034326ffa9593709cb728af3e01e9858e98a2ead5d20ae324e776de",
+  "manifest_sha256": "bdabc4ba87d6f0fe6b091ded225551e81ec581e642a56b9965d1cb28f3c2ae76",
+  "prediction_overlays": 500,
+  "configuration": {
+    "imgsz": 640,
+    "batch": 16,
+    "device": "0",
+    "workers": 0,
+    "confidence_cutoff": 0.001,
+    "nms_iou": 0.7,
+    "half": false,
+    "ultralytics": "8.4.127",
+    "torch": "2.5.1+cu121",
+    "native_resolution": "1280x800 letterboxed to imgsz"
+  },
+  "overall": {
+    "precision": 0.6326203399627366,
+    "recall": 0.6806325038037427,
+    "mAP50": 0.6670529650326185,
+    "mAP50-95": 0.5249722011991903
+  },
+  "per_class": [
+    {
+      "class_id": 0,
+      "name": "Tube_Holder",
+      "instances": 500,
+      "precision": 0.7492585430989502,
+      "recall": 0.9382863271773779,
+      "mAP50": 0.937988939417461,
+      "mAP50-95": 0.8183558946350287
+    },
+    {
+      "class_id": 1,
+      "name": "Glass_Tube",
+      "instances": 994,
+      "precision": 0.27288306938479034,
+      "recall": 0.6271272221741392,
+      "mAP50": 0.3308273219873288,
+      "mAP50-95": 0.19244735950750674
+    },
+    {
+      "class_id": 2,
+      "name": "Slide_Holder",
+      "instances": 996,
+      "precision": 0.8049001172348704,
+      "recall": 0.5291164658634538,
+      "mAP50": 0.7254171649522203,
+      "mAP50-95": 0.5721710627596669
+    },
+    {
+      "class_id": 3,
+      "name": "Eppendorf_Rack",
+      "instances": 500,
+      "precision": 0.7034396301323353,
+      "recall": 0.628,
+      "mAP50": 0.6739784337734639,
+      "mAP50-95": 0.5169144878945586
+    }
+  ],
+  "speed_ms_per_image": {
+    "preprocess": 0.24041799997212365,
+    "inference": 2.3236330001382157,
+    "loss": 0.0005203999462537467,
+    "postprocess": 2.8335193998063914
+  }
+}

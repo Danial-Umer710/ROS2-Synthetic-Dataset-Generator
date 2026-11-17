@@ -1,0 +1,72 @@
+{
+  "dataset": "ABC-iRobotics/LabWare_Items instance_segmentation test split (real UR16e camera)",
+  "split": "test",
+  "images": 500,
+  "instances": 2990,
+  "checkpoint": "D:\\Projects\\UR_Robotics_Project\\weights\\blenderproc\\best.pt",
+  "checkpoint_sha256": "1de4a36fe87b550b24d5ef71cda83fb8dc18cfe653607d880853f6f3f50d066f",
+  "manifest_sha256": "bdabc4ba87d6f0fe6b091ded225551e81ec581e642a56b9965d1cb28f3c2ae76",
+  "prediction_overlays": 500,
+  "configuration": {
+    "imgsz": 640,
+    "batch": 16,
+    "device": "0",
+    "workers": 0,
+    "confidence_cutoff": 0.001,
+    "nms_iou": 0.7,
+    "half": false,
+    "ultralytics": "8.4.127",
+    "torch": "2.5.1+cu121",
+    "native_resolution": "1280x800 letterboxed to imgsz"
+  },
+  "overall": {
+    "precision": 0.6445946419291175,
+    "recall": 0.6381082575467745,
+    "mAP50": 0.6949110689405512,
+    "mAP50-95": 0.5280880150169798
+  },
+  "per_class": [
+    {
+      "class_id": 0,
+      "name": "Tube_Holder",
+      "instances": 500,
+      "precision": 0.9056314876331817,
+      "recall": 0.7293544623948021,
+      "mAP50": 0.9057015835426864,
+      "mAP50-95": 0.7445148880600205
+    },
+    {
+      "class_id": 1,
+      "name": "Glass_Tube",
+      "instances": 994,
+      "precision": 0.39131571247500085,
+      "recall": 0.5211267605633803,
+      "mAP50": 0.4362921775964788,
+      "mAP50-95": 0.2704137144300317
+    },
+    {
+      "class_id": 2,
+      "name": "Slide_Holder",
+      "instances": 996,
+      "precision": 0.705330663117305,
+      "recall": 0.4879518072289157,
+      "mAP50": 0.6722519428734839,
+      "mAP50-95": 0.5051495449528367
+    },
+    {
+      "class_id": 3,
+      "name": "Eppendorf_Rack",
+      "instances": 500,
+      "precision": 0.5761007044909828,
+      "recall": 0.814,
+      "mAP50": 0.765398571749556,
+      "mAP50-95": 0.59227391262503
+    }
+  ],
+  "speed_ms_per_image": {
+    "preprocess": 0.2354409999679774,
+    "inference": 2.2097640000865795,
+    "loss": 0.00045220000902190804,
+    "postprocess": 2.728819399839267
+  }
+}

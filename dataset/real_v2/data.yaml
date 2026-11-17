@@ -1,0 +1,12 @@
+# Capture-level real UR16e frames from ABC-iRobotics/LabWare_Items (instance_segmentation).
+# `path` intentionally omitted: Ultralytics resolves split dirs relative to this file.
+# Splits are by capture (dataset_id): train=0001,0003,0004,0005 val=0006 test=0007,0009.
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: Tube_Holder
+  1: Glass_Tube
+  2: Slide_Holder
+  3: Eppendorf_Rack

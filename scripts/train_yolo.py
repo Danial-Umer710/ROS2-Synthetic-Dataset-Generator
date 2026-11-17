@@ -104,6 +104,8 @@ def main():
     parser.add_argument("--device", default="0")
     parser.add_argument("--project", type=Path, default=PROJECT_ROOT / "runs" / "obb" / "UR16e_Labware_Detection")
     parser.add_argument("--name", default="stl_synthetic_800_30ep_holdout")
+    parser.add_argument("--train-seed", type=int, default=SEED,
+                        help="Ultralytics training seed only; the dataset split seed stays 42")
     args = parser.parse_args()
     if min(args.epochs, args.imgsz, args.batch) <= 0:
         parser.error("epochs, imgsz and batch must be positive")
@@ -125,7 +127,7 @@ def main():
         "batch": args.batch,
         "device": args.device,
         "workers": 0,
-        "seed": SEED,
+        "seed": args.train_seed,
         "deterministic": True,
         "resume": False,
         "pretrained": True,
@@ -150,6 +152,7 @@ def main():
         "resume": False,
         "gpu": gpu,
         "split_seed": SEED,
+        "training_seed": args.train_seed,
         "splits": split_summary,
         "training_args": training_args,
     })
