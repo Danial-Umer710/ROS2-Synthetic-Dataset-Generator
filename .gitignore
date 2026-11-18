@@ -320,3 +320,10 @@ assets/*.jpg
 # Seed-repeat runs: publish metrics/predictions JSON only, not per-frame overlays or val plots
 /results/controlnet/seed_repeats/*/predictions/
 /results/controlnet/seed_repeats/*/yolo_val/
+# Sim+Real mixture experiment: publish per-run metrics, the summary and the curve only
+!/results/mixed/
+/results/mixed/**
+!/results/mixed/**/
+!/results/mixed/summary.json
+!/results/mixed/mixture_curve.png
+!/results/mixed/*/metrics.json

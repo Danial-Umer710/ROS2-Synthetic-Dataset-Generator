@@ -1,0 +1,12 @@
+# Real-only control: the 160 real images of real20, each listed 5 times, no synthetic.
+# `path` intentionally omitted: Ultralytics resolves entries relative to this file.
+# Validation and test are always the real_v2 capture-level splits (val 0006, test 0007/0009).
+train: train.txt
+val: ../../dataset/real_v2/images/val
+test: ../../dataset/real_v2/images/test
+
+names:
+  0: Tube_Holder
+  1: Glass_Tube
+  2: Slide_Holder
+  3: Eppendorf_Rack

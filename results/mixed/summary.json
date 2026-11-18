@@ -1,0 +1,1110 @@
+{
+  "experiment": "Sim+Real mixtures, 800 training images each, YOLOv8n-OBB, 30 epochs",
+  "synthetic_source": "dataset_controlnet_fg05 train (ControlNet s0.45, fg-keep 0.5)",
+  "real_source": "dataset/real_v2 train (captures 0001, 0003, 0004, 0005)",
+  "checkpoint_selection": "dataset/real_v2 val (capture 0006)",
+  "test": "dataset/real_v2 test (captures 0007, 0009; 500 frames, 2,990 instances)",
+  "metrics_note": "percent; mean and sample std over training seeds",
+  "mixtures": [
+    {
+      "real_share_percent": 0,
+      "real_images": 0,
+      "synthetic_images": 800,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "complete": true,
+      "per_seed": {
+        "0": {
+          "mAP50": 66.69,
+          "mAP50-95": 52.36
+        },
+        "1": {
+          "mAP50": 71.78,
+          "mAP50-95": 56.09
+        },
+        "2": {
+          "mAP50": 73.41,
+          "mAP50-95": 57.25
+        }
+      },
+      "overall": {
+        "precision": {
+          "mean": 64.72,
+          "std": 3.5,
+          "n": 3
+        },
+        "recall": {
+          "mean": 67.79,
+          "std": 3.77,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 70.63,
+          "std": 3.51,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 55.23,
+          "std": 2.55,
+          "n": 3
+        }
+      },
+      "per_class": {
+        "Tube_Holder": {
+          "precision": {
+            "mean": 74.78,
+            "std": 3.86,
+            "n": 3
+          },
+          "recall": {
+            "mean": 97.4,
+            "std": 1.4,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 96.7,
+            "std": 0.62,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 84.11,
+            "std": 1.18,
+            "n": 3
+          }
+        },
+        "Glass_Tube": {
+          "precision": {
+            "mean": 35.52,
+            "std": 5.8,
+            "n": 3
+          },
+          "recall": {
+            "mean": 62.24,
+            "std": 2.43,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 46.77,
+            "std": 10.2,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 27.63,
+            "std": 6.81,
+            "n": 3
+          }
+        },
+        "Slide_Holder": {
+          "precision": {
+            "mean": 81.34,
+            "std": 3.6,
+            "n": 3
+          },
+          "recall": {
+            "mean": 40.29,
+            "std": 10.84,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 69.47,
+            "std": 4.56,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 55.37,
+            "std": 4.15,
+            "n": 3
+          }
+        },
+        "Eppendorf_Rack": {
+          "precision": {
+            "mean": 67.26,
+            "std": 5.43,
+            "n": 3
+          },
+          "recall": {
+            "mean": 71.23,
+            "std": 7.79,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 69.58,
+            "std": 8.06,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 53.83,
+            "std": 6.95,
+            "n": 3
+          }
+        }
+      }
+    },
+    {
+      "real_share_percent": 20,
+      "real_images": 160,
+      "synthetic_images": 640,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "complete": true,
+      "per_seed": {
+        "0": {
+          "mAP50": 96.93,
+          "mAP50-95": 81.06
+        },
+        "1": {
+          "mAP50": 96.4,
+          "mAP50-95": 80.96
+        },
+        "2": {
+          "mAP50": 96.65,
+          "mAP50-95": 81.4
+        }
+      },
+      "overall": {
+        "precision": {
+          "mean": 92.91,
+          "std": 0.69,
+          "n": 3
+        },
+        "recall": {
+          "mean": 93.77,
+          "std": 0.51,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 96.66,
+          "std": 0.26,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 81.14,
+          "std": 0.23,
+          "n": 3
+        }
+      },
+      "per_class": {
+        "Tube_Holder": {
+          "precision": {
+            "mean": 99.39,
+            "std": 1.06,
+            "n": 3
+          },
+          "recall": {
+            "mean": 96.49,
+            "std": 0.13,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.43,
+            "std": 0.12,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 88.7,
+            "std": 0.61,
+            "n": 3
+          }
+        },
+        "Glass_Tube": {
+          "precision": {
+            "mean": 79.52,
+            "std": 1.76,
+            "n": 3
+          },
+          "recall": {
+            "mean": 86.28,
+            "std": 2.54,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 90.35,
+            "std": 1.2,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 64.51,
+            "std": 1.46,
+            "n": 3
+          }
+        },
+        "Slide_Holder": {
+          "precision": {
+            "mean": 96.47,
+            "std": 1.0,
+            "n": 3
+          },
+          "recall": {
+            "mean": 98.28,
+            "std": 1.13,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.24,
+            "std": 0.3,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 89.2,
+            "std": 0.07,
+            "n": 3
+          }
+        },
+        "Eppendorf_Rack": {
+          "precision": {
+            "mean": 96.27,
+            "std": 1.26,
+            "n": 3
+          },
+          "recall": {
+            "mean": 94.05,
+            "std": 0.7,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 97.61,
+            "std": 0.41,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 82.15,
+            "std": 0.99,
+            "n": 3
+          }
+        }
+      }
+    },
+    {
+      "real_share_percent": 40,
+      "real_images": 320,
+      "synthetic_images": 480,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "complete": true,
+      "per_seed": {
+        "0": {
+          "mAP50": 97.37,
+          "mAP50-95": 82.48
+        },
+        "1": {
+          "mAP50": 97.45,
+          "mAP50-95": 83.21
+        },
+        "2": {
+          "mAP50": 96.37,
+          "mAP50-95": 81.36
+        }
+      },
+      "overall": {
+        "precision": {
+          "mean": 93.36,
+          "std": 1.28,
+          "n": 3
+        },
+        "recall": {
+          "mean": 94.35,
+          "std": 1.25,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 97.06,
+          "std": 0.6,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 82.35,
+          "std": 0.93,
+          "n": 3
+        }
+      },
+      "per_class": {
+        "Tube_Holder": {
+          "precision": {
+            "mean": 98.89,
+            "std": 1.29,
+            "n": 3
+          },
+          "recall": {
+            "mean": 96.62,
+            "std": 3.4,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.21,
+            "std": 0.45,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 88.15,
+            "std": 1.56,
+            "n": 3
+          }
+        },
+        "Glass_Tube": {
+          "precision": {
+            "mean": 80.56,
+            "std": 3.56,
+            "n": 3
+          },
+          "recall": {
+            "mean": 88.5,
+            "std": 1.08,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 91.73,
+            "std": 1.96,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 68.04,
+            "std": 2.15,
+            "n": 3
+          }
+        },
+        "Slide_Holder": {
+          "precision": {
+            "mean": 98.72,
+            "std": 0.43,
+            "n": 3
+          },
+          "recall": {
+            "mean": 97.49,
+            "std": 1.25,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.34,
+            "std": 0.15,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 89.29,
+            "std": 0.93,
+            "n": 3
+          }
+        },
+        "Eppendorf_Rack": {
+          "precision": {
+            "mean": 95.27,
+            "std": 2.93,
+            "n": 3
+          },
+          "recall": {
+            "mean": 94.78,
+            "std": 1.37,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 97.98,
+            "std": 0.98,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 83.92,
+            "std": 1.37,
+            "n": 3
+          }
+        }
+      }
+    },
+    {
+      "real_share_percent": 50,
+      "real_images": 400,
+      "synthetic_images": 400,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "complete": true,
+      "per_seed": {
+        "0": {
+          "mAP50": 97.78,
+          "mAP50-95": 83.11
+        },
+        "1": {
+          "mAP50": 97.64,
+          "mAP50-95": 83.43
+        },
+        "2": {
+          "mAP50": 97.39,
+          "mAP50-95": 82.51
+        }
+      },
+      "overall": {
+        "precision": {
+          "mean": 94.93,
+          "std": 1.26,
+          "n": 3
+        },
+        "recall": {
+          "mean": 95.01,
+          "std": 0.65,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 97.6,
+          "std": 0.2,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 83.02,
+          "std": 0.47,
+          "n": 3
+        }
+      },
+      "per_class": {
+        "Tube_Holder": {
+          "precision": {
+            "mean": 99.32,
+            "std": 0.83,
+            "n": 3
+          },
+          "recall": {
+            "mean": 97.21,
+            "std": 1.7,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.13,
+            "std": 0.61,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 88.91,
+            "std": 0.55,
+            "n": 3
+          }
+        },
+        "Glass_Tube": {
+          "precision": {
+            "mean": 83.72,
+            "std": 4.45,
+            "n": 3
+          },
+          "recall": {
+            "mean": 90.93,
+            "std": 0.2,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 94.32,
+            "std": 1.21,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 68.26,
+            "std": 1.79,
+            "n": 3
+          }
+        },
+        "Slide_Holder": {
+          "precision": {
+            "mean": 98.21,
+            "std": 0.33,
+            "n": 3
+          },
+          "recall": {
+            "mean": 98.51,
+            "std": 0.27,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.44,
+            "std": 0.02,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 90.2,
+            "std": 0.09,
+            "n": 3
+          }
+        },
+        "Eppendorf_Rack": {
+          "precision": {
+            "mean": 98.46,
+            "std": 1.03,
+            "n": 3
+          },
+          "recall": {
+            "mean": 93.39,
+            "std": 1.25,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 97.52,
+            "std": 0.16,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 84.71,
+            "std": 0.25,
+            "n": 3
+          }
+        }
+      }
+    },
+    {
+      "real_share_percent": 60,
+      "real_images": 480,
+      "synthetic_images": 320,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "complete": true,
+      "per_seed": {
+        "0": {
+          "mAP50": 98.01,
+          "mAP50-95": 83.05
+        },
+        "1": {
+          "mAP50": 97.76,
+          "mAP50-95": 83.25
+        },
+        "2": {
+          "mAP50": 97.09,
+          "mAP50-95": 82.45
+        }
+      },
+      "overall": {
+        "precision": {
+          "mean": 95.04,
+          "std": 1.19,
+          "n": 3
+        },
+        "recall": {
+          "mean": 94.73,
+          "std": 0.97,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 97.62,
+          "std": 0.48,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 82.92,
+          "std": 0.42,
+          "n": 3
+        }
+      },
+      "per_class": {
+        "Tube_Holder": {
+          "precision": {
+            "mean": 98.73,
+            "std": 0.99,
+            "n": 3
+          },
+          "recall": {
+            "mean": 97.61,
+            "std": 2.61,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.23,
+            "std": 0.35,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 87.77,
+            "std": 1.49,
+            "n": 3
+          }
+        },
+        "Glass_Tube": {
+          "precision": {
+            "mean": 84.34,
+            "std": 2.26,
+            "n": 3
+          },
+          "recall": {
+            "mean": 90.28,
+            "std": 1.52,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 93.88,
+            "std": 1.65,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 69.26,
+            "std": 1.44,
+            "n": 3
+          }
+        },
+        "Slide_Holder": {
+          "precision": {
+            "mean": 99.08,
+            "std": 0.94,
+            "n": 3
+          },
+          "recall": {
+            "mean": 97.89,
+            "std": 0.61,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.45,
+            "std": 0.03,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 89.91,
+            "std": 0.7,
+            "n": 3
+          }
+        },
+        "Eppendorf_Rack": {
+          "precision": {
+            "mean": 98.0,
+            "std": 1.26,
+            "n": 3
+          },
+          "recall": {
+            "mean": 93.14,
+            "std": 1.96,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 97.92,
+            "std": 0.19,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 84.73,
+            "std": 0.51,
+            "n": 3
+          }
+        }
+      }
+    },
+    {
+      "real_share_percent": 80,
+      "real_images": 640,
+      "synthetic_images": 160,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "complete": true,
+      "per_seed": {
+        "0": {
+          "mAP50": 98.13,
+          "mAP50-95": 83.4
+        },
+        "1": {
+          "mAP50": 98.12,
+          "mAP50-95": 83.76
+        },
+        "2": {
+          "mAP50": 97.91,
+          "mAP50-95": 83.45
+        }
+      },
+      "overall": {
+        "precision": {
+          "mean": 95.1,
+          "std": 1.09,
+          "n": 3
+        },
+        "recall": {
+          "mean": 95.28,
+          "std": 0.61,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 98.05,
+          "std": 0.12,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 83.54,
+          "std": 0.19,
+          "n": 3
+        }
+      },
+      "per_class": {
+        "Tube_Holder": {
+          "precision": {
+            "mean": 99.58,
+            "std": 0.21,
+            "n": 3
+          },
+          "recall": {
+            "mean": 96.1,
+            "std": 2.26,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.44,
+            "std": 0.05,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 88.95,
+            "std": 0.4,
+            "n": 3
+          }
+        },
+        "Glass_Tube": {
+          "precision": {
+            "mean": 84.9,
+            "std": 2.52,
+            "n": 3
+          },
+          "recall": {
+            "mean": 90.97,
+            "std": 1.99,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 95.09,
+            "std": 0.49,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 69.71,
+            "std": 0.48,
+            "n": 3
+          }
+        },
+        "Slide_Holder": {
+          "precision": {
+            "mean": 99.22,
+            "std": 0.33,
+            "n": 3
+          },
+          "recall": {
+            "mean": 98.72,
+            "std": 0.33,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.48,
+            "std": 0.02,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 89.95,
+            "std": 0.24,
+            "n": 3
+          }
+        },
+        "Eppendorf_Rack": {
+          "precision": {
+            "mean": 96.7,
+            "std": 1.97,
+            "n": 3
+          },
+          "recall": {
+            "mean": 95.33,
+            "std": 0.64,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 98.21,
+            "std": 0.03,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 85.53,
+            "std": 0.6,
+            "n": 3
+          }
+        }
+      }
+    },
+    {
+      "real_share_percent": 100,
+      "real_images": 800,
+      "synthetic_images": 0,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "complete": true,
+      "per_seed": {
+        "0": {
+          "mAP50": 98.22,
+          "mAP50-95": 82.87
+        },
+        "1": {
+          "mAP50": 97.66,
+          "mAP50-95": 82.88
+        },
+        "2": {
+          "mAP50": 98.11,
+          "mAP50-95": 84.06
+        }
+      },
+      "overall": {
+        "precision": {
+          "mean": 95.7,
+          "std": 0.73,
+          "n": 3
+        },
+        "recall": {
+          "mean": 95.07,
+          "std": 0.37,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 98.0,
+          "std": 0.3,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 83.27,
+          "std": 0.68,
+          "n": 3
+        }
+      },
+      "per_class": {
+        "Tube_Holder": {
+          "precision": {
+            "mean": 98.28,
+            "std": 0.34,
+            "n": 3
+          },
+          "recall": {
+            "mean": 95.48,
+            "std": 2.14,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.18,
+            "std": 0.2,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 87.42,
+            "std": 0.7,
+            "n": 3
+          }
+        },
+        "Glass_Tube": {
+          "precision": {
+            "mean": 89.06,
+            "std": 2.83,
+            "n": 3
+          },
+          "recall": {
+            "mean": 89.6,
+            "std": 1.14,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 94.67,
+            "std": 0.98,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 69.78,
+            "std": 1.67,
+            "n": 3
+          }
+        },
+        "Slide_Holder": {
+          "precision": {
+            "mean": 98.57,
+            "std": 0.36,
+            "n": 3
+          },
+          "recall": {
+            "mean": 98.53,
+            "std": 0.35,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 99.43,
+            "std": 0.03,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 90.27,
+            "std": 0.27,
+            "n": 3
+          }
+        },
+        "Eppendorf_Rack": {
+          "precision": {
+            "mean": 96.9,
+            "std": 0.97,
+            "n": 3
+          },
+          "recall": {
+            "mean": 96.69,
+            "std": 0.28,
+            "n": 3
+          },
+          "mAP50": {
+            "mean": 98.7,
+            "std": 0.1,
+            "n": 3
+          },
+          "mAP50-95": {
+            "mean": 85.62,
+            "std": 1.61,
+            "n": 3
+          }
+        }
+      }
+    }
+  ],
+  "real_only_control": {
+    "name": "real20_only",
+    "description": "the same 160 real images as real20, each listed 5 times (800 entries), no synthetic",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "per_seed": {
+      "0": {
+        "mAP50": 97.24,
+        "mAP50-95": 81.08
+      },
+      "1": {
+        "mAP50": 97.49,
+        "mAP50-95": 82.21
+      },
+      "2": {
+        "mAP50": 96.36,
+        "mAP50-95": 79.27
+      }
+    },
+    "overall": {
+      "precision": {
+        "mean": 93.33,
+        "std": 0.87,
+        "n": 3
+      },
+      "recall": {
+        "mean": 92.75,
+        "std": 0.87,
+        "n": 3
+      },
+      "mAP50": {
+        "mean": 97.03,
+        "std": 0.6,
+        "n": 3
+      },
+      "mAP50-95": {
+        "mean": 80.85,
+        "std": 1.48,
+        "n": 3
+      }
+    },
+    "per_class": {
+      "Tube_Holder": {
+        "precision": {
+          "mean": 97.45,
+          "std": 0.71,
+          "n": 3
+        },
+        "recall": {
+          "mean": 86.55,
+          "std": 3.35,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 97.59,
+          "std": 1.68,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 83.9,
+          "std": 2.71,
+          "n": 3
+        }
+      },
+      "Glass_Tube": {
+        "precision": {
+          "mean": 83.11,
+          "std": 1.07,
+          "n": 3
+        },
+        "recall": {
+          "mean": 90.16,
+          "std": 2.5,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 93.03,
+          "std": 0.82,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 66.73,
+          "std": 0.85,
+          "n": 3
+        }
+      },
+      "Slide_Holder": {
+        "precision": {
+          "mean": 98.25,
+          "std": 0.59,
+          "n": 3
+        },
+        "recall": {
+          "mean": 98.0,
+          "std": 0.98,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 99.39,
+          "std": 0.02,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 89.04,
+          "std": 0.92,
+          "n": 3
+        }
+      },
+      "Eppendorf_Rack": {
+        "precision": {
+          "mean": 94.52,
+          "std": 4.42,
+          "n": 3
+        },
+        "recall": {
+          "mean": 96.27,
+          "std": 0.23,
+          "n": 3
+        },
+        "mAP50": {
+          "mean": 98.11,
+          "std": 1.45,
+          "n": 3
+        },
+        "mAP50-95": {
+          "mean": 83.75,
+          "std": 1.58,
+          "n": 3
+        }
+      }
+    },
+    "real20_minus_control_mAP50-95_per_seed": {
+      "0": -0.03,
+      "1": -1.25,
+      "2": 2.14
+    },
+    "real20_minus_control_mAP50-95_mean": 0.29
+  }
+}

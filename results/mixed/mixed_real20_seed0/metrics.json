@@ -1,0 +1,72 @@
+{
+  "dataset": "ABC-iRobotics/LabWare_Items instance_segmentation test split (real UR16e camera)",
+  "split": "test",
+  "images": 500,
+  "instances": 2990,
+  "checkpoint": "D:\\Projects\\UR_Robotics_Project\\runs\\obb\\UR16e_Labware_Detection\\mixed_real20_seed0\\weights\\best.pt",
+  "checkpoint_sha256": "edba665e2b5464ebb9180bdddd20943c37dc0c40aa62a6bd0dd27ebf32df2eb5",
+  "manifest_sha256": "bdabc4ba87d6f0fe6b091ded225551e81ec581e642a56b9965d1cb28f3c2ae76",
+  "prediction_overlays": 0,
+  "configuration": {
+    "imgsz": 640,
+    "batch": 16,
+    "device": "0",
+    "workers": 0,
+    "confidence_cutoff": 0.001,
+    "nms_iou": 0.7,
+    "half": false,
+    "ultralytics": "8.4.127",
+    "torch": "2.5.1+cu121",
+    "native_resolution": "1280x800 letterboxed to imgsz"
+  },
+  "overall": {
+    "precision": 0.9218059568906513,
+    "recall": 0.9431157967064532,
+    "mAP50": 0.9692525736864981,
+    "mAP50-95": 0.8105661784251215
+  },
+  "per_class": [
+    {
+      "class_id": 0,
+      "name": "Tube_Holder",
+      "instances": 500,
+      "precision": 1.0,
+      "recall": 0.9652476526569441,
+      "mAP50": 0.995,
+      "mAP50-95": 0.8799722763709108
+    },
+    {
+      "class_id": 1,
+      "name": "Glass_Tube",
+      "instances": 994,
+      "precision": 0.7756798380980144,
+      "recall": 0.8893360160965795,
+      "mAP50": 0.9134518619991946,
+      "mAP50-95": 0.6601144366231797
+    },
+    {
+      "class_id": 2,
+      "name": "Slide_Holder",
+      "instances": 996,
+      "precision": 0.9546264932251514,
+      "recall": 0.9698795180722891,
+      "mAP50": 0.9889852130188674,
+      "mAP50-95": 0.8917440659528968
+    },
+    {
+      "class_id": 3,
+      "name": "Eppendorf_Rack",
+      "instances": 500,
+      "precision": 0.9569174962394392,
+      "recall": 0.948,
+      "mAP50": 0.9795732197279301,
+      "mAP50-95": 0.810433934753499
+    }
+  ],
+  "speed_ms_per_image": {
+    "preprocess": 0.3654123999967851,
+    "inference": 3.921868400002495,
+    "loss": 0.0007309999964490999,
+    "postprocess": 3.7649180000044
+  }
+}

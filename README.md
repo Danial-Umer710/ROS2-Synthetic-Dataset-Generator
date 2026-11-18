@@ -23,6 +23,8 @@ This project connects STL geometry, procedural Blender rendering, geometry-deriv
 
 Keeping 50% of the original rendered pixels inside the labelled-object masks (`fg-keep 0.5`) beats the identical-scene un-stylized control by **+3.70 ± 2.48 mAP50–95 points on average** over 10 paired training seeds — it won all 10 of 10 seeds (paired t-test t(9) = 4.71, p = 0.0011; Wilcoxon signed-rank, exact two-sided, p = 0.002). `Glass_Tube`, the class that drove most of the gap, is where the gain concentrates: **27.52 ± 4.51%** vs 19.50 ± 2.29% real mAP50–95 (+8.01 pts, 10/10 wins).
 
+**Sim+Real mixtures** (800 training images, 3 seeds, held-out real captures — see [Sim+Real mixture experiment](#simreal-mixture-experiment-mixed_datasets)): synthetic-only 55.2%, 20% real 81.1%, real-only 83.3% mAP50–95. A small real set does most of the work, and mixing synthetic images in does not beat real-only; with only 160 real images the synthetic images leave the average unchanged but make training far more stable.
+
 > **Scope:** real-camera scores measure detection against auto-generated instance-mask ground truth on one benchmark session, not robot grasp success. Synthetic holdout scores (~88%) remain same-renderer-domain numbers. An image-space OBB is not a calibrated 3D pose or a guaranteed grasp point.
 
 ![Original render vs ControlNet-stylized variants with unchanged GT boxes](results/controlnet/stylize_grid_comparison.jpg)
@@ -41,6 +43,8 @@ Keeping 50% of the original rendered pixels inside the labelled-object masks (`f
   - [Published stylized datasets](#published-stylized-datasets)
   - [Results](#results)
   - [Capture-level real benchmark (`dataset/real_v2/`)](#capture-level-real-benchmark-datasetreal_v2)
+  - [Capture-level real benchmark](#capture-level-real-benchmark-datasetreal_v2)
+  - [Sim+Real mixture experiment](#simreal-mixture-experiment-mixed_datasets)
   - [Reproducing this stage](#reproducing-this-stage)
 - [Distractor and loose-tube extension (inherited from `blenderproc`)](#distractor-and-loose-tube-extension-inherited-from-blenderproc)
 - [Repository and published assets](#repository-and-published-assets)
@@ -268,6 +272,54 @@ Reading:
 - **Per class**, `Tube_Holder` and `Glass_Tube` are significant (9/10 wins each); `Slide_Holder` (5/10) and `Eppendorf_Rack` (8/10, p ≈ 0.1–0.2) are not. `Glass_Tube` remains the weakest class for every model (at most 35.2% mAP50–95).
 - **Seed 42 is again fg-keep 0.5's most favourable seed** (60.70%, +11.22 over its plain pair); the 10-seed means are the numbers to quote.
 - **The generator change is not shown to help on real data.** The distractor model (`Tube.stl`, always-filled holes) scores 52.81% here, inside the un-stylized control's seed range (47.70–54.59%, mean 51.37%) even though the control was rendered with `Falcon_Tube.stl` and ~50% hole fill. The distractor, baseline and fg-keep 1.0 rows are **single seed-42 runs**, so their differences from each other and from the multi-seed means are not tested.
+
+### Sim+Real mixture experiment (`mixed_datasets/`)
+
+The supervisor asked for models trained on **mixtures of synthetic and real images at different ratios**. Every mixture has exactly **800 training images**; only the real/synthetic ratio changes.
+
+- **Synthetic part:** `dataset_controlnet_fg05` train (the best synthetic recipe, ControlNet s0.45, fg-keep 0.5).
+- **Real part:** `dataset/real_v2` train (captures `0001`, `0003`, `0004`, `0005`), in equal numbers per capture.
+- **Nested subsets:** each source has one fixed seed-42 order, so a larger real share contains every real image of a smaller one.
+- **Checkpoint selection** uses the real `real_v2` validation capture (`0006`) for every mixture, including 0% real; **evaluation** is on the held-out test captures `0007` and `0009` (500 frames, 2,990 instances).
+- **Recipe** is unchanged (fresh DOTA-pretrained `yolov8n-obb.pt`, 30 epochs, 640 px, batch 16, deterministic), with **3 training seeds (0, 1, 2) per mixture**.
+
+[`scripts/build_mixed_datasets.py`](scripts/build_mixed_datasets.py) writes each mixture as `mixed_datasets/real<NN>/` (a `train.txt` image list, `data.yaml` and a manifest; no images are copied). [`scripts/train_mixed.py`](scripts/train_mixed.py) trains one mixture, [`scripts/run_mixture_experiment.py`](scripts/run_mixture_experiment.py) runs all 21 runs resumably, and [`scripts/summarize_mixtures.py`](scripts/summarize_mixtures.py) writes [`results/mixed/summary.json`](results/mixed/summary.json) and the curve below.
+
+**Real-only control.** To test whether the synthetic images help when real data is scarce, [`scripts/build_real_only_control.py`](scripts/build_real_only_control.py) builds `mixed_datasets/real20_only/`: the **same 160 real images** as the 20% mixture, with no synthetic images. Each image is listed 5 times, so a 30-epoch run takes the same number of training steps as the 800-image mixtures.
+
+Results on the `real_v2` test captures (mean ± sample std over 3 training seeds; per-class columns are mean mAP50–95):
+
+| Real share | Real images | Synthetic images | mAP50–95 per seed (0 / 1 / 2) | mAP50 | mAP50–95 | Tube_Holder | Glass_Tube | Slide_Holder | Eppendorf_Rack |
+|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|
+| 0% | 0 | 800 | 52.36 / 56.09 / 57.25 | 70.63 ± 3.51 | **55.23 ± 2.55** | 84.1 | 27.6 | 55.4 | 53.8 |
+| 20% | 160 | 640 | 81.06 / 80.96 / 81.40 | 96.66 ± 0.26 | **81.14 ± 0.23** | 88.7 | 64.5 | 89.2 | 82.2 |
+| 40% | 320 | 480 | 82.48 / 83.21 / 81.36 | 97.06 ± 0.60 | **82.35 ± 0.93** | 88.2 | 68.0 | 89.3 | 83.9 |
+| 50% | 400 | 400 | 83.11 / 83.43 / 82.51 | 97.60 ± 0.20 | **83.02 ± 0.47** | 88.9 | 68.3 | 90.2 | 84.7 |
+| 60% | 480 | 320 | 83.05 / 83.25 / 82.45 | 97.62 ± 0.48 | **82.92 ± 0.42** | 87.8 | 69.3 | 89.9 | 84.7 |
+| 80% | 640 | 160 | 83.40 / 83.76 / 83.45 | 98.05 ± 0.12 | **83.54 ± 0.19** | 89.0 | 69.7 | 90.0 | 85.5 |
+| 100% | 800 | 0 | 82.87 / 82.88 / 84.06 | 98.00 ± 0.30 | **83.27 ± 0.68** | 87.4 | 69.8 | 90.3 | 85.6 |
+| Control: 160 real only (×5) | 160 | 0 | 81.08 / 82.21 / 79.27 | 97.03 ± 0.60 | **80.85 ± 1.48** | 83.9 | 66.7 | 89.0 | 83.8 |
+
+![Sim+Real mixture curve](results/mixed/mixture_curve.png)
+
+Reading:
+
+1. **Synthetic data alone does not replace real data in these scenes.** 0% real reaches 55.23 ± 2.55% mAP50–95; any mixture containing real images reaches 81–84%.
+2. **A small amount of real data does most of the work.** 160 real images (20%) reach 81.14%, about 97% of the 800-real-only score (83.27%). Going from 160 to 800 real images adds about 2 points.
+3. **Mixing does not beat real-only.** The best mixture, 80% real, averages 83.54 ± 0.19% against 83.27 ± 0.68% for real-only, a +0.27-point difference that changes sign across seeds (+0.53, +0.88, −0.61). The 50% and 60% mixtures average slightly *below* real-only. With 3 seeds these differences are within training noise; the data do not support a claim that adding synthetic images improves on real data here.
+4. **When real data is scarce, synthetic images do not raise the average but do stabilise training.** Adding the 640 synthetic images to the 160 real images changes the mean from 80.85 ± 1.48% to 81.14 ± 0.23% (per-seed differences −0.03, −1.25, +2.14: not significant), but cuts the seed-to-seed spread by about six times. Per class, the synthetic images help `Tube_Holder` (88.7 vs 83.9) and slightly hurt `Glass_Tube` (64.5 vs 66.7).
+5. **Real images also stabilise training.** Synthetic-only runs vary by about 5 points between seeds; every mixture with real images stays within about 1 point.
+
+**Scope:** the real training and test captures share the same objects, bench, lighting and camera, which favours real training data strongly. These numbers describe transfer within this laboratory set-up, not to an unseen environment, where synthetic data may matter more. Three seeds per point are enough to show the overall shape of the curve but not to separate differences below about 1 point.
+
+```powershell
+python scripts/build_mixed_datasets.py          # refuses existing mixture folders
+python scripts/build_real_only_control.py
+python -u scripts/run_mixture_experiment.py     # 21 runs, ~6.3 h on an RTX 4050 Laptop GPU; resumable
+python -u scripts/train_mixed.py --mixture mixed_datasets/real20_only --train-seed 0 --name control_real160only_seed0
+python scripts/eval_real_test.py --weights runs/obb/UR16e_Labware_Detection/control_real160only_seed0/weights/best.pt --dataset dataset/real_v2 --output results/mixed/control_real160only_seed0 --skip-predict
+python scripts/summarize_mixtures.py
+```
 
 ### Reproducing this stage
 

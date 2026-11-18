@@ -12,3 +12,4 @@ requirements.txt text eol=lf
 /weights/controlnet_fg05/*.pt -text
 /dataset_controlnet/** -text
 /dataset_controlnet_fg05/** -text
+mixed_datasets/** -text
