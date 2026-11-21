@@ -3,8 +3,8 @@ build_mixed_datasets.py
 =======================
 Build the Sim+Real mixture training sets for the mixture experiment.
 
-Every mixture has exactly 800 training images.  The real share is 0, 20, 40,
-50, 60, 80 or 100 percent; the remainder is synthetic:
+Every mixture has exactly 800 training images.  The real share is 0, 2, 5, 10,
+20, 40, 50, 60, 80 or 100 percent; the remainder is synthetic:
 
     synthetic  dataset_controlnet_fg05/images/train   (800 stylized renders)
     real       dataset/real_v2/images/train           (captures 0001/0003/0004/0005)
@@ -26,9 +26,11 @@ Ultralytics finds each label by replacing the last ``/images/`` path component
 with ``/labels/``, so the labels stay in their source datasets as well.
 
 Usage:
-    python scripts/build_mixed_datasets.py        # refuses existing mixture folders
+    python scripts/build_mixed_datasets.py                    # all shares; refuses existing folders
+    python scripts/build_mixed_datasets.py --shares 2 5 10    # only the low-real mixtures
 """
 
+import argparse
 import json
 import random
 from pathlib import Path
@@ -37,7 +39,7 @@ from yolo_dataset_splitter import CLASS_NAMES, PROJECT_ROOT
 
 SEED = 42
 TOTAL = 800
-REAL_SHARES = (0, 20, 40, 50, 60, 80, 100)
+REAL_SHARES = (0, 2, 5, 10, 20, 40, 50, 60, 80, 100)
 SYNTH_DIR = PROJECT_ROOT / "dataset_controlnet_fg05"
 REAL_DIR = PROJECT_ROOT / "dataset" / "real_v2"
 OUT_ROOT = PROJECT_ROOT / "mixed_datasets"
@@ -76,9 +78,13 @@ def ordered_sources():
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Build Sim+Real mixture training lists.")
+    parser.add_argument("--shares", type=int, nargs="+", default=list(REAL_SHARES),
+                        help="real shares in percent (default: all)")
+    args = parser.parse_args()
     synth, real = ordered_sources()
     OUT_ROOT.mkdir(exist_ok=True)
-    for share in REAL_SHARES:
+    for share in args.shares:
         n_real = TOTAL * share // 100
         n_synth = TOTAL - n_real
         if n_real % len(TRAIN_CAPTURES):

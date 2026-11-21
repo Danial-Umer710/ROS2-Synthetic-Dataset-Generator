@@ -7,6 +7,11 @@ Order is seed-major (all seven mixtures for seed 0, then seed 1, then seed 2),
 so a complete mixture curve exists after the first seven runs.
 
     python -u scripts/run_mixture_experiment.py
+    python -u scripts/run_mixture_experiment.py --sets real02 realonly_016 realonly_016_x800
+
+``--sets`` takes folder names under ``mixed_datasets/``; runs are named
+``mixed_<folder>_seed<N>`` for mixtures and ``<folder>_seed<N>`` for real-only
+controls (``realonly_*``).
 
 Resumable: a run whose ``results/mixed/<name>/metrics.json`` exists is skipped;
 a run that trained but was not evaluated is only evaluated. A run directory
@@ -38,12 +43,15 @@ def main():
     parser = argparse.ArgumentParser(description="Run the Sim+Real mixture experiment.")
     parser.add_argument("--seeds", type=int, nargs="+", default=list(SEEDS))
     parser.add_argument("--shares", type=int, nargs="+", default=list(SHARES))
+    parser.add_argument("--sets", nargs="+", default=None,
+                        help="mixed_datasets folder names (overrides --shares)")
     args = parser.parse_args()
+    sets = args.sets or [f"real{share:02d}" for share in args.shares]
     RESULTS_ROOT.mkdir(parents=True, exist_ok=True)
     started = time.time()
     for seed in args.seeds:
-        for share in args.shares:
-            name = f"mixed_real{share:02d}_seed{seed}"
+        for folder in sets:
+            name = (folder if folder.startswith("realonly") else f"mixed_{folder}") + f"_seed{seed}"
             result_dir = RESULTS_ROOT / name
             run_dir = RUNS_ROOT / name
             best = run_dir / "weights" / "best.pt"
@@ -55,7 +63,7 @@ def main():
             t0 = time.time()
             if not run_dir.exists():
                 run([sys.executable, "-u", SCRIPTS / "train_mixed.py",
-                     "--mixture", PROJECT_ROOT / "mixed_datasets" / f"real{share:02d}",
+                     "--mixture", PROJECT_ROOT / "mixed_datasets" / folder,
                      "--train-seed", seed, "--name", name])
             elif not best.is_file():
                 sys.exit(f"{run_dir} exists without best.pt (interrupted run); inspect it before rerunning")

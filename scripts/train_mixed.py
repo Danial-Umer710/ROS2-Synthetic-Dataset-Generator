@@ -36,11 +36,12 @@ def load_mixture(mixture):
     lines = (mixture / "train.txt").read_text(encoding="utf-8").split()
     images = [(mixture / line).resolve() for line in lines]
     listed = [(PROJECT_ROOT / entry["image"]).resolve() for entry in manifest["images"]]
-    distinct = manifest.get("distinct_images", TOTAL)
-    if len(images) != TOTAL or len(set(images)) != distinct or images != listed:
-        raise ValueError(f"train.txt must list exactly the {TOTAL} entries ({distinct} distinct images) of the manifest")
+    total = manifest.get("total_images", TOTAL)
+    distinct = manifest.get("distinct_images", total)
+    if len(images) != total or len(set(images)) != distinct or images != listed:
+        raise ValueError(f"train.txt must list exactly the {total} entries ({distinct} distinct images) of the manifest")
     real = sum(entry["source"] == "real" for entry in manifest["images"])
-    if real != manifest["real_images"] or TOTAL - real != manifest["synthetic_images"]:
+    if real != manifest["real_images"] or total - real != manifest["synthetic_images"]:
         raise ValueError("manifest source counts are inconsistent")
     for image, entry in zip(images, manifest["images"]):
         if not image.is_file() or not (PROJECT_ROOT / entry["label"]).is_file():

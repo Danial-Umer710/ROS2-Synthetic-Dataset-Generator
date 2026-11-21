@@ -1,0 +1,72 @@
+{
+  "dataset": "ABC-iRobotics/LabWare_Items instance_segmentation test split (real UR16e camera)",
+  "split": "test",
+  "images": 500,
+  "instances": 2990,
+  "checkpoint": "D:\\Projects\\UR_Robotics_Project\\runs\\obb\\UR16e_Labware_Detection\\realonly_016_seed1\\weights\\best.pt",
+  "checkpoint_sha256": "ff2557f80eb28b2c655e098e6effb085101b74e989e7336943aa798f7b79cb52",
+  "manifest_sha256": "bdabc4ba87d6f0fe6b091ded225551e81ec581e642a56b9965d1cb28f3c2ae76",
+  "prediction_overlays": 0,
+  "configuration": {
+    "imgsz": 640,
+    "batch": 16,
+    "device": "0",
+    "workers": 0,
+    "confidence_cutoff": 0.001,
+    "nms_iou": 0.7,
+    "half": false,
+    "ultralytics": "8.4.127",
+    "torch": "2.5.1+cu121",
+    "native_resolution": "1280x800 letterboxed to imgsz"
+  },
+  "overall": {
+    "precision": 0.445934876360373,
+    "recall": 0.5559509944263823,
+    "mAP50": 0.49172449843099003,
+    "mAP50-95": 0.3126828977371218
+  },
+  "per_class": [
+    {
+      "class_id": 0,
+      "name": "Tube_Holder",
+      "instances": 500,
+      "precision": 0.45761780845752276,
+      "recall": 0.686,
+      "mAP50": 0.48083741406984737,
+      "mAP50-95": 0.35688198602911597
+    },
+    {
+      "class_id": 1,
+      "name": "Glass_Tube",
+      "instances": 994,
+      "precision": 0.39988726347717385,
+      "recall": 0.01609657947686117,
+      "mAP50": 0.34879458409929215,
+      "mAP50-95": 0.18943054640695647
+    },
+    {
+      "class_id": 2,
+      "name": "Slide_Holder",
+      "instances": 996,
+      "precision": 0.602556244858061,
+      "recall": 0.857429718875502,
+      "mAP50": 0.8264557449107528,
+      "mAP50-95": 0.5259933595679167
+    },
+    {
+      "class_id": 3,
+      "name": "Eppendorf_Rack",
+      "instances": 500,
+      "precision": 0.3236781886487342,
+      "recall": 0.6642776793531658,
+      "mAP50": 0.3108102506440677,
+      "mAP50-95": 0.1784256989444982
+    }
+  ],
+  "speed_ms_per_image": {
+    "preprocess": 0.27428079998935573,
+    "inference": 2.0066640000150073,
+    "loss": 0.00066380001953803,
+    "postprocess": 45.86368179990677
+  }
+}

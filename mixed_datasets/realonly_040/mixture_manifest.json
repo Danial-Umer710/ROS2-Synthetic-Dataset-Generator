@@ -1,0 +1,551 @@
+{
+  "mixture": "realonly_040",
+  "control_for": "real05",
+  "real_share_percent": 100,
+  "total_images": 40,
+  "distinct_images": 40,
+  "steps_matched": false,
+  "repeat": 1.0,
+  "real_images": 40,
+  "synthetic_images": 0,
+  "order_seed": 42,
+  "real_entries_per_capture": {
+    "0001": 10,
+    "0003": 10,
+    "0004": 10,
+    "0005": 10
+  },
+  "sources": {
+    "real": "dataset/real_v2/images/train"
+  },
+  "val": "dataset/real_v2/images/val (capture 0006)",
+  "test": "dataset/real_v2/images/test (captures 0007, 0009)",
+  "class_names": [
+    "Tube_Holder",
+    "Glass_Tube",
+    "Slide_Holder",
+    "Eppendorf_Rack"
+  ],
+  "images": [
+    {
+      "image": "dataset/real_v2/images/train/0001_0044.png",
+      "label": "dataset/real_v2/labels/train/0001_0044.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0059.png",
+      "label": "dataset/real_v2/labels/train/0003_0059.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0199.png",
+      "label": "dataset/real_v2/labels/train/0004_0199.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0074.png",
+      "label": "dataset/real_v2/labels/train/0005_0074.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0001_0098.png",
+      "label": "dataset/real_v2/labels/train/0001_0098.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0205.png",
+      "label": "dataset/real_v2/labels/train/0003_0205.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0117.png",
+      "label": "dataset/real_v2/labels/train/0004_0117.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0047.png",
+      "label": "dataset/real_v2/labels/train/0005_0047.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0001_0184.png",
+      "label": "dataset/real_v2/labels/train/0001_0184.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0170.png",
+      "label": "dataset/real_v2/labels/train/0003_0170.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0115.png",
+      "label": "dataset/real_v2/labels/train/0004_0115.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0154.png",
+      "label": "dataset/real_v2/labels/train/0005_0154.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0001_0123.png",
+      "label": "dataset/real_v2/labels/train/0001_0123.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0179.png",
+      "label": "dataset/real_v2/labels/train/0003_0179.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0165.png",
+      "label": "dataset/real_v2/labels/train/0004_0165.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0105.png",
+      "label": "dataset/real_v2/labels/train/0005_0105.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        0,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0001_0121.png",
+      "label": "dataset/real_v2/labels/train/0001_0121.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0216.png",
+      "label": "dataset/real_v2/labels/train/0003_0216.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0004.png",
+      "label": "dataset/real_v2/labels/train/0004_0004.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0149.png",
+      "label": "dataset/real_v2/labels/train/0005_0149.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0001_0167.png",
+      "label": "dataset/real_v2/labels/train/0001_0167.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0093.png",
+      "label": "dataset/real_v2/labels/train/0003_0093.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0190.png",
+      "label": "dataset/real_v2/labels/train/0004_0190.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0018.png",
+      "label": "dataset/real_v2/labels/train/0005_0018.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0001_0009.png",
+      "label": "dataset/real_v2/labels/train/0001_0009.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0154.png",
+      "label": "dataset/real_v2/labels/train/0003_0154.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0156.png",
+      "label": "dataset/real_v2/labels/train/0004_0156.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0230.png",
+      "label": "dataset/real_v2/labels/train/0005_0230.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0001_0176.png",
+      "label": "dataset/real_v2/labels/train/0001_0176.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0217.png",
+      "label": "dataset/real_v2/labels/train/0003_0217.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0022.png",
+      "label": "dataset/real_v2/labels/train/0004_0022.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0201.png",
+      "label": "dataset/real_v2/labels/train/0005_0201.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0001_0197.png",
+      "label": "dataset/real_v2/labels/train/0001_0197.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0074.png",
+      "label": "dataset/real_v2/labels/train/0003_0074.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0205.png",
+      "label": "dataset/real_v2/labels/train/0004_0205.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0241.png",
+      "label": "dataset/real_v2/labels/train/0005_0241.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0001_0113.png",
+      "label": "dataset/real_v2/labels/train/0001_0113.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0001",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0003_0185.png",
+      "label": "dataset/real_v2/labels/train/0003_0185.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0003",
+      "instances_by_class": [
+        1,
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0004_0047.png",
+      "label": "dataset/real_v2/labels/train/0004_0047.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0004",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "image": "dataset/real_v2/images/train/0005_0231.png",
+      "label": "dataset/real_v2/labels/train/0005_0231.txt",
+      "source": "real",
+      "source_dataset": "dataset/real_v2",
+      "capture": "0005",
+      "instances_by_class": [
+        1,
+        2,
+        2,
+        1
+      ]
+    }
+  ]
+}
